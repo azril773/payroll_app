@@ -1,0 +1,49 @@
+{% extends "base/index.html" %}
+{% block content %}
+
+{% comment %} <section id="nav">
+    <div class="d-flex align-items-center justify-content-start">
+        <div class="col-md-12 pd-x-0">  
+                
+                {% for s in status %}   
+                    <a href="{% url 'payroll' s.status_pegawai_id%}" class="btn btn-outline-info mg-b-8">{{s.status_pegawai.status}}</a> &nbsp;   
+                {% endfor %}
+            
+
+        </div>            
+    </div>
+</section> {% endcomment %}
+{% for message in messages %}
+        <div class="container-fluid p-0">
+            {% if 'safe' in message.tags %}
+            <div class="alert alert-info alert-dismissible" role="alert" >
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                <span class="tx-16"></span>{{ message | safe }}</span>
+            </div>
+            {% elif message.tags == "error" %}
+            <div class="alert alert-danger alert-dismissible" role="alert" >
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                <span class="tx-16"></span>{{ message | safe }}</span>
+            </div>
+            {% else %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert" >
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                <span class="tx-16"></span>{{ message }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+<section id="content" class="container mt-5">
+   {% comment %} <h1>Beranda</h1> {% endcomment %}
+   <h4>Selamat Datang diaplikasi <b>payroll v2.0</b></h4>
+</section>
+
+{% endblock content %}
+{% block js %}
+{% endblock js %}

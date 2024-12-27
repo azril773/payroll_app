@@ -1,0 +1,24 @@
+<div class="d-flex align-items-center justify-content-start">
+    <div class="col-md-12 pd-x-0">  
+        {% if sid == 0 %}
+            <a href="{% url 'payroll' 0 %}" class="btn btn-info mg-b-8">Semua Data</a> &nbsp; 
+                
+            {% for s in status %}   
+                <a href="{% url 'payroll' s.id%}" class="btn btn-outline-info mg-b-8">{{s.status}}</a> &nbsp;  
+            {% endfor %}
+
+        {% else %}
+            <a href="{% url 'payroll' 0 %}" class="btn btn-outline-info mg-b-8">Semua Data</a> &nbsp; 
+            
+            {% for s in status %}   
+                {% if s.id == sid %}
+                    <a href="{% url 'payroll' s.id%}" class="btn btn-info mg-b-8">{{s.status}}</a> &nbsp;   
+                {% else %}
+                    <a href="{% url 'payroll' s.id%}" class="btn btn-outline-info mg-b-8">{{s.status}}</a> &nbsp; 
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+
+    </div>            
+</div>

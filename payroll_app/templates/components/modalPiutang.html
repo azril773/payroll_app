@@ -1,0 +1,285 @@
+<div
+  class="modal fade"
+  id="tambahPiutangModal"
+  tabindex="-1"
+  aria-labelledby="tambahPiutangModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tambahPiutangModalLabel">Tambah Piutang</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form
+        action=""
+        method="post"
+        id="tambahPiutang"
+        class="needs-validation"
+        novalidate
+      >
+        {% csrf_token %}
+        <div class="modal-body">
+          <div id="msgModalPtg"></div>
+          <div class="row">
+            <div class="col-md-12">
+              <label for="tglPiutang" class="form-label">Tanggal</label>
+              <span class="text-danger">*</span>
+              <input
+                type="date"
+                name="tglPiutang"
+                id="tglPiutang"
+                class="form-control"
+                required
+              />
+              <div class="invalid-feedback">Form tidak boleh kosong.</div>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="pPiutang" class="form-label text-black"
+                >Pegawai</label
+              >
+              <span class="text-danger">*</span>
+              <select name="pegawai" id="pPiutang" required>
+                <option value="">Pilih Pegawai</option>
+                {% for p in pegawai %}
+                <option value="{{p.pk}}">{{p.nama}}</option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">Form tidak boleh kosong.</div>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="jPiutang" class="form-label text-black"
+                >Jenis Piutang</label
+              >
+              <span class="text-danger">*</span>
+              <select name="jenis" id="jPiutang" required>
+                <option value="">Pilih Jenis Piutang</option>
+                {% for j in jenis %}
+                <option value="{{j.pk}}">
+                  {{j.jenis_transaksi.jenis_transaksi}}
+                </option>
+                {% endfor %}
+              </select>
+              <div class="invalid-feedback">Form tidak boleh kosong.</div>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="nPiutang" class="form-label text-black"
+                >Nilai (Rupiah)</label
+              >
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                class="form-control"
+                name="nPiutang"
+                id="nPiutang"
+                required
+              />
+              <div class="invalid-feedback">Form tidak boleh kosong.</div>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="potPiutang" class="form-label"
+                >Potongan Piutang</label
+              >
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="potPiutang"
+                id="potPiutang"
+                class="form-control"
+                required
+              />
+              <div class="invalid-feedback">Form tidak boleh kosong.</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="editPotonganModal"
+  tabindex="-1"
+  aria-labelledby="editPotonganModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editPotonganModalLabel">Edit Potongan</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="" method="post" id="editPotonganForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div id="msgEditPotongan"></div>
+          <div class="row">
+            <div class="col-md-12">
+              <input type="hidden" name="idEditPot" id="idEditPot" />
+              <label for="editPotPiutang" class="form-label"
+                >Potongan Piutang Per Bulan</label
+              >
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editPotPiutang"
+                id="editPotPiutang"
+                class="form-control"
+              />
+              <div class="invalid-feedback">Form tidak boleh kosong.</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="pelunasanModal"
+  tabindex="-1"
+  aria-labelledby="pelunasanModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pelunasanModalLabel">Pelunasan Piutang</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="" method="post" id="pelunasanForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div id="msgPelunasan"></div>
+          <div class="row">
+            <div class="col-md-6">
+              <input type="hidden" id="idPelunasan" />
+              <label for="jpembayaran" class="form-label"
+                >Jenis Pembayaran</label
+              >
+              <span class="text-danger">*</span>
+              <select name="jpembayaran" id="jpembayaran">
+                <option value="">Pilih Jenis Pembayaran</option>
+                {% for j in jenis_transaksi %}
+                <option value="{{j.pk}}">{{j.jenis_transaksi}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="tpembayaran">Total Pembayaran</label>
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="tpembayaran"
+                id="tpembayaran"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="ketemuModal"
+  tabindex="-1"
+  aria-labelledby="ketemuModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ketemuModalLabel">
+          Tambah Ketemu - Keliru
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="" method="post" id="ketemuForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div id="msgKetemu"></div>
+          <div class="row">
+            <div class="col-md-6">
+              <input type="hidden" id="idPelunasan" />
+              <label for="kpegawai" class="form-label">Pegawai</label>
+              <span class="text-danger">*</span>
+              <select name="kpegawai" id="kpegawai">
+                <option value="">Pilih Pegawai</option>
+                {% for p in pegawai %}
+                <option value="{{p.pk}}">{{p.nama}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="ketkel">Ketemu - Keliru</label>
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="ketkel"
+                id="ketkel"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

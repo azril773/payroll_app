@@ -1,0 +1,251 @@
+{% extends "base/index.html" %} {% block content %}
+<div class="d-flex justify-content-end">
+  <button
+    class="btn btn-success"
+    data-toggle="modal"
+    data-target="#tambahPotModal"
+  >
+    Tambah Data Potongan Hari
+  </button>
+</div>
+<table class="table" id="potonganTable">
+  {% csrf_token %}
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Potongan</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Modal Tambah Potongan -->
+<div
+  class="modal fade"
+  id="tambahPotModal"
+  tabindex="-1"
+  aria-labelledby="tambahPotModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tambahPotModalLabel">
+          Tambah Data Potongan Absensi
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgTp"></div>
+      <form method="post" id="formtambahpot">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <label for="tambahPot" class="form-label">Potongan</label>
+              <input
+                type="text"
+                name="tambahPot"
+                id="tambahPot"
+                class="form-control"
+              />
+              <input type="hidden" name="idTambahPot" id="idTambahPot" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnedit">
+            Simpan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tambah Potongan -->
+
+<!-- Modal Edit Potongan -->
+<div
+  class="modal fade"
+  id="editPotModal"
+  tabindex="-1"
+  aria-labelledby="editPotModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editPotModalLabel">
+          Edit Potongan Absensi
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgEp"></div>
+      <form method="post" id="formeditpot">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <label for="editPot" class="form-label">Potongan</label>
+              <input
+                type="text"
+                name="editPot"
+                id="editPot"
+                class="form-control"
+              />
+              <input type="hidden" name="idEditPot" id="idEditPot" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnedit">
+            Edit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Potongan -->
+{% endblock content %} {% block js %}
+<script>
+  const token = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+  $("#potonganTable").DataTable({
+    ajax: {
+      url: "{% url 'pot_absensi_json' %}",
+      method: "post",
+      headers: { "X-CSRFToken": token },
+    },
+    columns: [
+      {
+        data: "id",
+        render: (data, type, row, meta) => {
+          return `<button class="btn btn-outline-info" data-id="${data}" data-pot="${row.potongan}" data-target="#editPotModal" data-toggle="modal">Edit potongan absensi per hari</button>`;
+        },
+      },
+      {
+        data: "potongan",
+        render: (data, type, row, meta) => {
+          return `<span>${format(data)}</span>`;
+        },
+      },
+    ],
+    bLengthChange: false,
+    columnDefs: [
+      { target: [0], width: "10%", className: "text-nowrap" },
+      { target: [1], className: "dt-center text-center" },
+    ],
+    rowCallback: (row, data) => {
+      $("td", row).eq(0).addClass("text-dark");
+      $("td", row).eq(1).addClass("text-dark");
+    },
+  });
+
+  $("#editPot").on("keyup", function (e) {
+    $("#editPot").val(format($("#editPot").val()));
+  });
+
+  $("#editPotModal").on("show.bs.modal", function (e) {
+    const potongan = $(e.relatedTarget).data("pot");
+    const id = $(e.relatedTarget).data("id");
+    $("#editPot").val(format(potongan));
+    $("#idEditPot").val(id);
+    setTimeout(() => {
+      $("#editPot").focus();
+      $("#editPot").select();
+    }, 500);
+  });
+
+  $("#formeditpot").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#idEditPot").val() ? $("#idEditPot").val() : undefined;
+    const pot = $("#editPot").val()
+      ? $("#editPot")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    $.ajax({
+      url: "{% url 'edit_pot_json' %}",
+      method: "post",
+      data: { id, pot },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgEp p").remove();
+        $("#potonganTable").DataTable().ajax.reload();
+        $("#editPotModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgEp p").remove();
+
+        if (err.responseJSON?.msg) {
+          $("#msgEp").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgEp").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+<!-- Tambah Potongan -->
+<script>
+  $("#formtambahpot").on("submit", function (e) {
+    e.preventDefault();
+    const pot = $("#tambahPot").val()
+      ? $("#tambahPot")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    $.ajax({
+      url: "{% url 'tambah_pot_json' %}",
+      method: "post",
+      data: { pot },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgTp p").remove();
+        $("#potonganTable").DataTable().ajax.reload();
+        $("#tambahPot").val("");
+        $("#tambahPotModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgTp p").remove();
+      },
+    });
+  });
+
+  $("#tambahPotModal").on("show.bs.modal", function (e) {
+    setTimeout(() => {
+      $("#tambahPot").focus();
+    }, 500);
+  });
+
+  $("#tambahPot").on("keyup", function (e) {
+    $("#tambahPot").val(format($("#tambahPot").val()));
+  });
+</script>
+<!-- Tambah Potongan -->
+{% endblock js%}

@@ -1,0 +1,434 @@
+{% extends "base/index.html" %} {% block content %}
+<div class="d-flex justify-content-end">
+  <button
+    class="btn btn-success"
+    data-toggle="modal"
+    data-target="#tambahRekSumberModal"
+  >
+    Tambah Rekening Sumber Dana
+  </button>
+</div>
+<table class="table" id="rekSumberTable">
+  {% csrf_token %}
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Nama Rekening</th>
+      <th>No Rekening</th>
+      <th>Atas Nama</th>
+      <th>Bank</th>
+      <th>BPJS</th>
+      <th>Email</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Modal Tambah Rekening -->
+<div
+  class="modal fade"
+  id="tambahRekSumberModal"
+  tabindex="-1"
+  aria-labelledby="tambahRekSumberModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tambahRekSumberModalLabel">
+          Rekening Sumber Dana
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgTr"></div>
+      <form method="post" id="formtambahreksumber">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mt-3">
+              <label for="tambahNamaRek" class="form-label"
+                >Nama Rekening</label
+              >
+              <input
+                type="text"
+                name="tambahNamaRek"
+                id="tambahNamaRek"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="tambahNoRek" class="form-label">No Rekening</label>
+              <input
+                type="text"
+                name="tambahNoRek"
+                id="tambahNoRek"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="tambahAtasNama" class="form-label">Atas Nama</label>
+              <input
+                type="text"
+                name="tambahAtasNama"
+                id="tambahAtasNama"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="tambahBank" class="form-label">Bank</label>
+              <input
+                type="text"
+                name="tambahBank"
+                id="tambahBank"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-12 mt-3">
+              <label for="tambahBpjs" class="form-label">Status BPJS</label>
+              <select name="tambahBpjs" id="tambahBpjs">
+                <option value="">Pilih Status</option>
+                <option value="0">Non BPJS</option>
+                <option value="1">BPJS</option>
+              </select>
+            </div>
+            <div class="col-md-12 mt-3">
+              <label for="tambahEmail" class="form-label">Email</label>
+              <input
+                type="text"
+                name="tambahEmail"
+                id="tambahEmail"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Edit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Tambah Rekening -->
+
+<!-- Modal Edit Rekening -->
+<div
+  class="modal fade"
+  id="editRekSumberModal"
+  tabindex="-1"
+  aria-labelledby="editRekSumberModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editRekSumberModalLabel">
+          Edit Potongan Absensi
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgEr"></div>
+      <form method="post" id="formeditreksumber">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mt-3">
+              <label for="editNamaRek" class="form-label">Nama Rekening</label>
+              <input
+                type="text"
+                name="editNamaRek"
+                id="editNamaRek"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editNoRek" class="form-label">No Rekening</label>
+              <input
+                type="text"
+                name="editNoRek"
+                id="editNoRek"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editAtasNama" class="form-label">Atas Nama</label>
+              <input
+                type="text"
+                name="editAtasNama"
+                id="editAtasNama"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editBank" class="form-label">Bank</label>
+              <input
+                type="text"
+                name="editBank"
+                id="editBank"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-12 mt-3">
+              <label for="editBpjs" class="form-label">BPJS</label>
+              <select name="editBpjs" id="editBpjs">
+                <option value="">Pilih Status</option>
+                <option value="0">Non BPJS</option>
+                <option value="1">BPJS</option>
+              </select>
+            </div>
+            <div class="col-md-12 mt-3">
+              <label for="editEmail" class="form-label">Email</label>
+              <input
+                type="text"
+                name="editEmail"
+                id="editEmail"
+                class="form-control"
+              />
+            </div>
+            <input type="hidden" name="idEdit" id="idEdit" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnedit">
+            Edit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Edit Rekening -->
+
+<!-- Modal Delete Rekening -->
+<div
+  class="modal fade"
+  id="deleteRekSumberModal"
+  tabindex="-1"
+  aria-labelledby="deleteRekSumberModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteRekSumberModalLabel">
+          Hapus Rekening Sumber Dana
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgDr"></div>
+      <form method="post" id="formdelreksumber">
+        {% csrf_token %}
+        <div class="modal-body">
+          Apakah anda yakin?
+          <input type="hidden" name="idDelete" id="idDelete" />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-danger" id="btnedit">
+            Hapus
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Delete Rekening -->
+
+{% endblock content %} {% block js %}
+<script>
+  const tambahBpjsSelectize = $("#tambahBpjs").selectize();
+  const editBpjsSelectize = $("#editBpjs").selectize();
+  const token = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+  $("#rekSumberTable").DataTable({
+    ajax: {
+      url: "{% url 'rek_sumber_dana_json' %}",
+      method: "post",
+      headers: { "X-CSRFToken": token },
+    },
+    columns: [
+      {
+        data: "id",
+        render: (data, type, row, meta) => {
+          return `<button class="btn btn-outline-primary" data-toggle="modal" data-target="#editRekSumberModal" data-nama="${row.nama_rek}" data-norek="${row.no_rek}" data-atasnama="${row.atas_nama}" data-bank="${row.bank}" data-bpjs="${row.bpjs}" data-email="${row.email}" data-id="${row.id}">Edit</button>&nbsp<button class="btn btn-outline-danger" data-toggle="modal" data-target="#deleteRekSumberModal"data-id="${row.id}">Hapus</button>`;
+        },
+      },
+      { data: "nama_rek" },
+      { data: "no_rek" },
+      { data: "atas_nama" },
+      { data: "bank" },
+      { data: "status_bpjs" },
+      { data: "email" },
+    ],
+    bLengthChange: false,
+  });
+</script>
+
+<script>
+  $("#formtambahreksumber").on("submit", function (e) {
+    e.preventDefault();
+    const nama_rek = $("#tambahNamaRek").val()
+      ? $("#tambahNamaRek").val()
+      : undefined;
+    const norek = $("#tambahNoRek").val() ? $("#tambahNoRek").val() : undefined;
+    const atas_nama = $("#tambahAtasNama").val()
+      ? $("#tambahAtasNama").val()
+      : undefined;
+    const bank = $("#tambahBank").val() ? $("#tambahBank").val() : undefined;
+    const bpjs = $("#tambahBpjs").val() ? $("#tambahBpjs").val() : undefined;
+    const email = $("#tambahEmail").val() ? $("#tambahEmail").val() : undefined;
+
+    $.ajax({
+      url: "{% url 'tambah_rek_sumber_dana_json' %}",
+      method: "post",
+      data: { nama_rek, norek, atas_nama, bank, bpjs, email },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgTr p").remove();
+        $("#rekSumberTable").DataTable().ajax.reload();
+        $("#tambahNamaRek").val("");
+        $("#tambahNoRek").val("");
+        $("#tambahAtasNama").val("");
+        $("#tambahBank").val("");
+        $("#tambahEmail").val("");
+        $("#tambahRekSumberModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgTr p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgTr").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgTr").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<script>
+  $("#editRekSumberModal").on("show.bs.modal", function (e) {
+    const namaRek = $(e.relatedTarget).data("nama");
+    const norek = $(e.relatedTarget).data("norek");
+    const atas_nama = $(e.relatedTarget).data("atasnama");
+    const bank = $(e.relatedTarget).data("bank");
+    const bpjs = $(e.relatedTarget).data("bpjs");
+    const email = $(e.relatedTarget).data("email");
+    const id = $(e.relatedTarget).data("id");
+
+    editBpjsSelectize[0].selectize.setValue(bpjs);
+    $("#editNamaRek").val(namaRek);
+    $("#editNoRek").val(norek);
+    $("#editAtasNama").val(atas_nama);
+    $("#editBank").val(bank);
+    $("#editEmail").val(email);
+    $("#idEdit").val(id);
+  });
+
+  $("#formeditreksumber").on("submit", function (e) {
+    e.preventDefault();
+    const nama_rek = $("#editNamaRek").val()
+      ? $("#editNamaRek").val()
+      : undefined;
+    const norek = $("#editNoRek").val() ? $("#editNoRek").val() : undefined;
+    const atas_nama = $("#editAtasNama").val()
+      ? $("#editAtasNama").val()
+      : undefined;
+    const bank = $("#editBank").val() ? $("#editBank").val() : undefined;
+    const bpjs = $("#editBpjs").val() ? $("#editBpjs").val() : undefined;
+    console.log(bpjs);
+    const email = $("#editEmail").val() ? $("#editEmail").val() : undefined;
+    const id = $("#idEdit").val() ? $("#idEdit").val() : undefined;
+    $.ajax({
+      url: "{% url 'edit_rek_sumber_dana_json' %}",
+      method: "post",
+      data: { nama_rek, norek, atas_nama, bank, bpjs, email, id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgEr p").remove();
+        $("#rekSumberTable").DataTable().ajax.reload();
+        $("#editRekSumberModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgEr p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgEr").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgEr").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<script>
+  $("#deleteRekSumberModal").on("show.bs.modal", function (e) {
+    const id = $(e.relatedTarget).data("id");
+    $("#idDelete").val(id);
+  });
+
+  $("#formdelreksumber").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#idDelete").val() ? $("#idDelete").val() : undefined;
+
+    $.ajax({
+      url: "{% url 'delete_rek_sumber_dana_json' %}",
+      method: "post",
+      data: { id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgDr p").remove();
+        $("#rekSumberTable").DataTable().ajax.reload();
+        $("#deleteRekSumberModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgDr p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgDr").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgDr").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+{% endblock js%}

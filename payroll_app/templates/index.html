@@ -1,0 +1,29 @@
+{% extends "./base/index.html" %}
+{% block content %}
+
+    {% include "base/status_pegawai.html" %}
+
+    <table id="coba" class="table">
+        <thead>
+            <tr>
+                <th>Lor</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>lore</td>
+            </tr>
+        </tbody>
+    </table>
+
+{% endblock content %}
+{% block js %}
+    <script>
+        $("#coba").DataTable({
+            "rowCallback": function (row, data) {
+                console.log(row)
+                $('td', row).eq(1).addClass('text-dark');
+            },
+        })
+    </script>
+{% endblock js %}

@@ -1,0 +1,686 @@
+{% extends "base/index.html" %} {% block content %}
+<section id="button">
+  <div class="d-flex justify-content-between mx-auto">
+    <button
+      class="btn btn-primary"
+      data-target="#piutangPostModal"
+      data-toggle="modal"
+    >
+      Belum Posting
+      <span class="badge badge-light" id="countTemp">{{countTemp}}</span>
+    </button>
+    <div class="">
+      <button
+        class="btn btn-primary mr-3"
+        data-toggle="modal"
+        data-target="#tambahPiutangModal"
+      >
+        Tambah Piutang Karyawan
+      </button>
+      <button
+        class="btn btn-info"
+        data-target="#ketemuModal"
+        data-toggle="modal"
+      >
+        Tambah Ketemu
+      </button>
+    </div>
+  </div>
+</section>
+<div id="msgGeneral"></div>
+<section id="content">
+  <table id="piutangTable" class="table">
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Nama</th>
+        <th>Nik</th>
+        <th>Total Piutang</th>
+        <th>Ketemu</th>
+        <th>Pot. Piutang Per bulan</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</section>
+
+<!-- Modal -->
+{% include "components/modalPiutang.html" %}
+<!---->
+{% include "components/modalTempPiutang.html" %}
+<!---->
+{% include "components/modalDetailPiutang.html" %}
+<!-- Modal -->
+{% endblock content %} {% block js %}
+
+<!-- BATAS FUNCTION -->
+<script>
+  moment.locale("id");
+  function format(value) {
+    const nilai = value.toString().replace(/[^\d,]/g, "");
+    if (nilai == "") {
+      return "";
+    }
+    const pembagi = nilai.length % 3;
+    const rupiah = nilai.substr(0, pembagi);
+    const ribu = nilai.substr(pembagi);
+    const pecah = ribu.match(/\d{3}/gi);
+    const result =
+      rupiah !== ""
+        ? pecah == null
+          ? rupiah
+          : rupiah + "." + pecah.join(".")
+        : pecah.join(".");
+    return result;
+  }
+
+  function posting(token) {
+    ids = [];
+    $("#piutangPostTable>tbody>tr>td>input:checked").each((i, e) => {
+      ids.push($(e).val());
+    });
+
+    $.ajax({
+      url: '{% url "tbh_piutang_json" %}',
+      method: "POST",
+      data: { id: ids },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgModalPostPtg p").remove();
+        $("#piutangTable").DataTable().ajax.reload();
+        $("#countTemp").text(e.count);
+        $("#piutangPostTable").DataTable().ajax.reload();
+      },
+      error: (err) => {
+        $("#msgModalPostPtg p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgModalPostPtg").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgModalPostPtg").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  }
+</script>
+
+<!-- BATAS AKHIR FUNCTION -->
+
+<script>
+  const token = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+  const pegawaiPiutangSelectize = $("#pPiutang").selectize();
+  const jenisPiutangSelectize = $("#jPiutang").selectize();
+  const piutangTable = $("#piutangTable").DataTable({
+    ajax: {
+      url: '{% url "piutang_json" %}',
+      method: "POST",
+      headers: { "X-CSRFToken": token },
+      error: (err) => {
+        $("#msgGeneral p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgGeneral").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgGeneral").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    },
+    columns: [
+      {
+        data: null,
+        render: (data, type, row, meta) => {
+          return `<button class="btn btn-outline-primary" data-target="#editPotonganModal" data-id="${row.id}" data-pot="${row.pot}" data-toggle="modal">Edit Potongan</button>&nbsp;<button class="btn btn-outline-success" data-toggle="modal" data-target="#detailPiutangModal" id="detailPiutangButton" data-idp="${data.idp}">Detail Piutang</button>&nbsp;<button class="btn btn-outline-danger" data-target="#pelunasanModal" data-toggle="modal" data-id="${row.id}">Pelunasan</button>`;
+        },
+      },
+      { data: "nama" },
+      { data: "nik" },
+      {
+        data: "piutang",
+        render: (data, type, row, meta) => {
+          return `<span>${format(data)}</span>`;
+        },
+      },
+      {
+        data: "ketemu",
+        render: (data, type, row, meta) => {
+          return `<span>${format(data)}</span>`;
+        },
+      },
+      {
+        data: "pot",
+        render: (data, type, row, meta) => {
+          return `<span>${format(data)}</span>`;
+        },
+      },
+    ],
+    columnDefs: [{ target: [3, 4, 5], className: "dt-right" }],
+    bLengthChange: false,
+  });
+
+  $("#tambahPiutang").on("submit", function (e) {
+    e.preventDefault();
+    const tanggal = $("#tglPiutang").val() ? $("#tglPiutang").val() : undefined;
+
+    const pegawai = $("#pPiutang").val() ? $("#pPiutang").val() : undefined;
+
+    const jenis = $("#jPiutang").val() ? $("#jPiutang").val() : undefined;
+
+    const nilai = $("#nPiutang").val().replace(/[^\d]/g, "")
+      ? $("#nPiutang").val().replace(/[^\d]/g, "")
+      : undefined;
+
+    const potongan = $("#potPiutang").val().replace(/[^\d]/g, "")
+      ? $("#potPiutang").val().replace(/[^\d]/g, "")
+      : undefined;
+    // Ajax Post Temporary piutang
+    $.ajax({
+      url: "{% url 'tpiutang_json' %}",
+      method: "post",
+      data: { tanggal, pegawai, jenis, nilai, potongan },
+      headers: {
+        "X-CSRFToken": token,
+      },
+      success: (e) => {
+        $("#tambahPiutangModal").modal("hide");
+        $("#msgModalPtg p").remove();
+        $("#tambahPiutang").removeClass("was-validated");
+        $("#tglPiutang").val("");
+        pegawaiPiutangSelectize[0].selectize.clear();
+        jenisPiutangSelectize[0].selectize.clear();
+        $("#nPiutang").val("");
+        $("#potPiutang").val("");
+        $("#countTemp").text(e.data.count);
+      },
+      error: (err) => {
+        $("#msgModalPtg p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgModalPtg").append(
+            `<p class='alert alert-danger'>${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgModalPtg").append(
+            `<p class='alert alert-danger'>Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+  $("#nPiutang").on("keyup", function (e) {
+    $(this).val(format($(this).val()));
+  });
+  $("#potPiutang").on("keyup", function (e) {
+    $(this).val(format($(this).val()));
+  });
+</script>
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<!-- Akhir Temporary -->
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<!-- Posting Piutang -->
+<!-- ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+<script>
+  // Post Piutang
+  $("#piutangPostModal").on("show.bs.modal", function (e) {
+    $("#piutangPostTable").DataTable({
+      ajax: {
+        url: "{% url 'post_piutang_json' %}",
+        method: "post",
+        headers: { "X-CSRFToken": token },
+        error: (err) => {
+          $("#msgModalPostPtg p").remove();
+          if (err.responseJSON?.msg) {
+            $("#msgModalPostPtg").append(
+              `<p class='alert alert-danger'>${err.responseJSON.msg}</p>`
+            );
+          } else {
+            $("#msgModalPostPtg").append(
+              `<p class='alert alert-danger'>Terjadi Kesalahan</p>`
+            );
+          }
+        },
+      },
+      columns: [
+        {
+          data: null,
+          render: (data, type, row, meta) => {
+            return `<input type="checkbox" value="${row.id}" name="" id="postingSelect" class="pt-3 nonclick" />&nbsp<span role="button" data-target="#editPostModal" data-toggle="modal" class="badge badge-primary nonclick" data-id="${row.id}" data-pegawai="${row.pegawai_id}" data-jenis="${row.jenis_id}" data-nilai="${row.piutang}" data-pot="${row.pot_piutang}" data-tanggal="${row.tanggal}">Edit</span>&nbsp<span role="button" data-target="#deletePostModal" data-toggle="modal" data-id="${row.id}" class="badge badge-danger nonclick">Hapus</span>`;
+          },
+        },
+        {
+          data: "tanggal",
+          render: (data, type, row, meta) => {
+            return `<span class="text-nowrap">${moment(
+              data,
+              "YYYY-MM-DD"
+            ).format("dddd, DD MMMM YYYY")}</span>`;
+          },
+        },
+        { data: "pegawai" },
+        {
+          data: "jenis_piutang",
+        },
+        {
+          data: "piutang",
+          render: (data, type, row, meta) => {
+            return `<span class="text-right">${format(data)}</span>`;
+          },
+        },
+        {
+          data: "pot_piutang",
+          render: (data, type, row, meta) => {
+            return `<span class="text-right">${format(data)}</span>`;
+          },
+        },
+      ],
+      columnDefs: [
+        { target: [0], className: "dt-left text-nowrap" },
+        { target: [1], className: "dt-left text-nowrap" },
+        { target: [2], className: "dt-left text-nowrap" },
+        { target: [4], className: "dt-right" },
+        { target: [5], className: "dt-right" },
+      ],
+      bLengthChange: false,
+    });
+  });
+
+  $("#piutangPostModal").on("hide.bs.modal", function (e) {
+    $("#piutangPostTable").DataTable().destroy();
+    console.log("OKOK");
+  });
+
+  $("#piutangPostTable").on("click", "tbody tr", function (e) {
+    console.log($(e.target).is(".nonclick"));
+    if (!$(e.target).is(".nonclick")) {
+      if (!$(e.currentTarget).find("td:first").find("input").prop("checked")) {
+        $(e.currentTarget).find("td:first").find("input").prop("checked", true);
+      } else {
+        $(e.currentTarget)
+          .find("td:first")
+          .find("input")
+          .prop("checked", false);
+      }
+    }
+  });
+
+  $("#postingSelected").on("click", function (e) {
+    posting(token);
+  });
+
+  $("#postingAll").on("click", function (e) {
+    $("#piutangPostTable>tbody>tr>td>input").prop("disabled", true);
+    $("#piutangPostTable>tbody>tr>td>input").prop("checked", true);
+    posting(token);
+  });
+</script>
+
+<!-- Edit Posting -->
+<script>
+  const editPostPegawaiSelectize = $("#editPostPegawai").selectize();
+  const editPostJenisSelectize = $("#editPostJenis").selectize();
+
+  $("#editPostNilai").on("keyup", function (e) {
+    $("#editPostNilai").val(format($(this).val()));
+  });
+
+  $("#editPostPot").on("keyup", function (e) {
+    $("#editPostPot").val(format($(this).val()));
+  });
+
+  $("#editPostModal").on("show.bs.modal", function (e) {
+    $("#editPostTanggal").val($(e.relatedTarget).data("tanggal"));
+    $("#idEdit").val($(e.relatedTarget).data("id"));
+    editPostPegawaiSelectize[0].selectize.setValue(
+      $(e.relatedTarget).data("pegawai")
+    );
+    editPostJenisSelectize[0].selectize.setValue(
+      $(e.relatedTarget).data("jenis")
+    );
+    $("#editPostNilai").val(format($(e.relatedTarget).data("nilai")));
+    $("#editPostPot").val(format($(e.relatedTarget).data("pot")));
+    $("#piutangPostModal").modal("hide");
+  });
+
+  $("#editPostModal").on("hide.bs.modal", function (e) {
+    $("#piutangPostModal").modal("show");
+  });
+
+  $("#editPostForm").on("submit", function (e) {
+    console.log(e);
+    e.preventDefault();
+    const id = $("#idEdit").val() ? $("#idEdit").val() : undefined;
+    const tanggal = $("#editPostTanggal").val()
+      ? $("#editPostTanggal").val()
+      : undefined;
+    const pegawai = $("#editPostPegawai").val()
+      ? $("#editPostPegawai").val()
+      : undefined;
+    const jenis = $("#editPostJenis").val()
+      ? $("#editPostJenis").val()
+      : undefined;
+    const nilai = $("#editPostNilai").val()
+      ? $("#editPostNilai").val().replace(/[^\d]/g, "")
+      : undefined;
+    const pot = $("#editPostPot").val()
+      ? $("#editPostPot").val().replace(/[^\d]/g, "")
+      : undefined;
+    console.log(tanggal, pegawai, jenis, nilai, pot);
+    $.ajax({
+      url: "{% url 'edit_piutang_json' %}",
+      method: "POST",
+      data: { id, tanggal, pegawai, jenis, nilai, pot },
+      headers: { "X-CSRFToken": token },
+      success: () => {
+        $("#msgEditPostModal p").remove();
+        $("#editPostModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgEditPostModal p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgEditPostModal").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgEditPostModal").append(
+            `<p class="alert alert-danger">Terjadi kesalaha</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<!-- Delete Posting -->
+<script>
+  $("#deletePostModal").on("show.bs.modal", function (e) {
+    $("#idDelete").val($(e.relatedTarget).data("id"));
+    $("#piutangPostModal").modal("hide");
+  });
+  $("#deletePostModal").on("hide.bs.modal", function (e) {
+    $("#piutangPostModal").modal("show");
+  });
+
+  $("#deletePostForm").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#idDelete").val() ? $("#idDelete").val() : undefined;
+    console.log(id);
+    $.ajax({
+      url: "{% url 'delete_piutang_json' %}",
+      method: "post",
+      data: { id: id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        if (e.count) {
+          $("#countTemp").text(e.count.count);
+        }
+        $("#msgPostDeleteModal p").remove();
+        $("#deletePostModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgPostDeleteModal p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgPostDeleteModal").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgPostDeleteModal").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+        console.log(err);
+      },
+    });
+  });
+</script>
+
+<!-- General -->
+<!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
+
+<!-- Edit Potongan -->
+<script>
+  $("#editPotPiutang").on("keyup", function (e) {
+    $("#editPotPiutang").val(format($("#editPotPiutang").val()));
+  });
+  $("#editPotonganModal").on("show.bs.modal", function (e) {
+    $("#idEditPot").val($(e.relatedTarget).data("id"));
+    const formatNumber = format($(e.relatedTarget).data("pot"));
+    $("#editPotPiutang").val(formatNumber);
+    setTimeout(() => {
+      $("#editPotPiutang").focus();
+    }, 500);
+  });
+
+  $("#editPotonganForm").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#idEditPot").val() ? $("#idEditPot").val() : undefined;
+    const pot = $("#editPotPiutang").val()
+      ? $("#editPotPiutang").val().replace(/[^\d]/g, "")
+      : undefined;
+    $.ajax({
+      url: "{% url 'edit_potongan_json' %}",
+      method: "post",
+      data: { id, pot },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgEditPotongan p").remove();
+        $("#editPotPiutang").val("");
+        $("#editPotonganModal").modal("hide");
+        $("#piutangTable").DataTable().ajax.reload();
+      },
+      error: (err) => {
+        $("#msgEditPotongan p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgEditPotongan").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgEditPotongan").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<!-- Detail Piutang -->
+
+<script>
+  $(document).on("click", "#detailPiutangButton", function (e) {
+    const idp = $(e.target).data("idp");
+    $("#detailPiutangTable").DataTable().destroy();
+    $("#detailPiutangTable").DataTable({
+      ajax: {
+        url: "{% url 'detail_piutang_json' %}",
+        data: { idp },
+        method: "post",
+        headers: { "X-CSRFToken": token },
+      },
+      columns: [
+        {
+          data: null,
+          render: (data, type, row, meta) => {
+            return `<button class="btn btn-outline-warning" id="editDetailPiutang" type="button" data-jpiutang="${row.jenis_transaksi}" data-nilai="${row.nilai}" data-id="${row.id}" data-toggle="modal" data-target="#editDetailPiutangModal">Edit</button>&nbsp;&nbsp;`;
+          },
+        },
+        {
+          data: "tgl",
+          render: (data, type, row, meta) => {
+            const formatTanggal = moment(data, "YYYY-MM-DD").format(
+              "dddd, DD MMMM YYYY"
+            );
+            return `<span>${formatTanggal} </span>`;
+          },
+        },
+        { data: "pegawai" },
+        { data: "jenis_transaksi" },
+        { data: "nodok" },
+        {
+          data: "nilai",
+          render: (data, type, row, meta) => {
+            const formatHarga = format(data);
+            return `<span>${formatHarga}</span>`;
+          },
+        },
+      ],
+      columnDefs: [
+        {
+          target: [0, 1, 2, 3],
+          className: "dt-left text-nowrap text-sm",
+        },
+      ],
+      bLengthChange: false,
+    });
+  });
+
+  $("#editDetailPiutangModal").on("show.bs.modal", function (e) {
+    const jenis = $(e.relatedTarget).data("jpiutang");
+    const nilai = $(e.relatedTarget).data("nilai");
+    const id = $(e.relatedTarget).data("id");
+    $("#labelEditNilai").text(jenis);
+    $("#idEditDetail").val(id);
+    $("#eNilaiDetail").val(format(nilai));
+    $("#detailPiutangModal").modal("hide");
+  });
+
+  $("#editDetailPiutangModal").on("hide.bs.modal", function (e) {
+    $("#detailPiutangModal").modal("show");
+  });
+
+  $("#eNilaiDetail").on("keyup", function (e) {
+    $("#eNilaiDetail").val(format($(this).val()));
+  });
+
+  $("#editDetailPiutang").on("submit", function (e) {
+    e.preventDefault();
+    const nilai = $("#eNilaiDetail").val()
+      ? $("#eNilaiDetail").val().replace(/[^\d]/g, "")
+      : undefined;
+    const id = $("#idEditDetail").val() ? $("#idEditDetail").val() : undefined;
+    $.ajax({
+      url: "{% url 'edit_detail_json' %}",
+      method: "post",
+      data: { nilai, id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        console.log(e);
+        $("#piutangTable").DataTable().ajax.reload();
+        $("#msgModalEditDetail p").remove();
+        $("#detailPiutangTable").DataTable().ajax.reload();
+        $("#editDetailPiutangModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgModalEditDetail p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgModalEditDetail").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgModalEditDetail").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<!-- Pelunasan Piutang -->
+<script>
+  const jpembayaranSelectize = $("#jpembayaran").selectize();
+  $("#tpembayaran").on("keyup", function (e) {
+    $("#tpembayaran").val(format($("#tpembayaran").val()));
+  });
+
+  $("#pelunasanModal").on("show.bs.modal", function (e) {
+    console.log($(e.relatedTarget).data("id"));
+    $("#idPelunasan").val($(e.relatedTarget).data("id"));
+  });
+
+  $("#pelunasanForm").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#idPelunasan").val();
+    const jpembayaran = $("#jpembayaran").val()
+      ? $("#jpembayaran").val()
+      : undefined;
+    const tpembayaran = $("#tpembayaran").val()
+      ? $("#tpembayaran").val().replace(/[^\d]/g, "")
+      : undefined;
+    console.log(id, jpembayaran, tpembayaran);
+    $.ajax({
+      url: "{% url 'pelunasan_json' %}",
+      method: "post",
+      data: { id, jpembayaran, tpembayaran },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgPelunasan p").remove();
+        jpembayaranSelectize[0].selectize.clear();
+        $("#tpembayaran").val("");
+        $("#piutangTable").DataTable().ajax.reload();
+        $("#pelunasanModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgPelunasan p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgPelunasan").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgPelunasan").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<!-- Ketemu -->
+<script>
+  const kpegawaiSelectize = $("#kpegawai").selectize();
+
+  $("#ketkel").on("keyup", function (e) {
+    $("#ketkel").val(format($("#ketkel").val()));
+  });
+
+  $("#ketemuForm").on("submit", function (e) {
+    e.preventDefault();
+    const idp = $("#kpegawai").val() ? $("#kpegawai").val() : undefined;
+    const ketemu = $("#ketkel").val()
+      ? $("#ketkel").val().replace(/[^\d]/g, "")
+      : undefined;
+
+    $.ajax({
+      url: '{% url "tketemu_keliru" %}',
+      method: "post",
+      data: { idp, ketemu },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgKetemu p").remove();
+        $("#ketemuModal").modal("hide");
+        kpegawaiSelectize[0].selectize.clear();
+        $("#ketkel").val("");
+        $("#piutangTable").DataTable().ajax.reload();
+      },
+      error: (err) => {
+        $("#msgKetemu p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgKetemu").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgKetemu").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+{% endblock js %}

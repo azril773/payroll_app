@@ -1,0 +1,836 @@
+{% extends "base/index.html" %} {% block content %}
+
+<section id="content" style="width: 100%; overflow-x: auto">
+  <h5 class="text-dark">Data Pegawai</h5>
+  &nbsp; &nbsp;&nbsp; &nbsp;
+  <div id="msg"></div>
+  <div class="d-flex justify-content-start">
+    &nbsp;
+    <button
+      class="btn btn-outline-info"
+      data-toggle="modal"
+      data-target="#editDPegawai"
+    >
+      Edit By Divisi</button
+    >&nbsp;
+    <button
+      class="btn btn-outline-primary"
+      data-toggle="modal"
+      data-target="#editSPegawai"
+    >
+      Edit Semua Pegawai
+    </button>
+    &nbsp;
+    <button
+      class="btn btn-outline-warning"
+      data-toggle="modal"
+      data-target="#editBanyakPegawai"
+    >
+      Edit Banyak Pegawai
+    </button>
+  </div>
+  <input type="hidden" id="status" value="{{sid}}" />
+  {% csrf_token %}
+  <table id="payroll" class="table">
+    <thead>
+      <tr>
+        <th class="text-dark">Action</th>
+        <th class="text-dark">Nama</th>
+        <th class="text-dark">Nik</th>
+        <th class="text-dark">Divisi</th>
+        <th class="text-dark text-wrap">Tgl Masuk</th>
+        <th class="text-dark">Masa Kerja (Tahun)</th>
+        <th class="text-dark">Rek. Dana</th>
+        <th class="text-dark">Rek. Pegawai</th>
+        <th class="text-dark">Gapok</th>
+        <th class="text-dark">Tunjangan Masa Kerja</th>
+        <th class="text-dark">Tunjangan Jabatan</th>
+        <th class="text-dark">Tunjangan Tetap</th>
+        <th class="text-dark">Bpjs_tk</th>
+        <th class="text-dark">Bpjs_ks</th>
+        <th class="text-dark">Transfer / Cash</th>
+        <th class="text-dark">Status</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  <input type="hidden" name="sid" id="sid" value="{{sid}}" />
+</section>
+
+<!-- Modal -->
+
+<!-- Pegawai -->
+<div
+  class="modal fade"
+  id="editPegawai"
+  tabindex="-1"
+  aria-labelledby="editPegawaiLabel"
+  aria-hidden="true"
+  style="width: 100%"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Edit Pegawai</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgP"></div>
+      <form method="post" id="formedit">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label for="pegawai">Pilih Pegawai</label>
+              <select name="pegawai" id="pegawai">
+                <option value="">Pilih Pegawai</option>
+                {% for p in pegawai %}
+                <option value="{{p.pk}}">{{p.nama}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tt" class="form-label">Tunjangan Tetap</label>
+              <input type="text" class="form-control" name="tt" id="tt" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tj" class="form-label">Tunjangan Jabatan</label>
+              <input type="text" class="form-control" name="tj" id="tj" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="gaji" class="form-label">Gaji</label>
+              <input type="text" class="form-control" name="gaji" id="gaji" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tc" class="form-label">Transfer / Cash</label>
+              <select name="tc" id="tc">
+                <option value="">Pilih Transfer / Cash</option>
+                <option value="Transfer">Transfer</option>
+                <option value="Cash">Cash</option>
+                <option value="Transfer_proporsional">
+                  Transfer_proporsional
+                </option>
+                <option value="Cash_proporsional">Cash_proporsional</option>
+              </select>
+            </div>
+            <div class="col-12 mb-3">
+              <label for="sp" class="form-label">Status Payroll</label>
+              <select name="sp" id="sp">
+                <option value="">Pilih Status Payroll</option>
+                <option value="0">Tidak Aktif</option>
+                <option value="1">Aktif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnedit">
+            Edit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Pegawai -->
+
+<!-- Banyak Pegawai -->
+<div
+  class="modal fade"
+  id="editBanyakPegawai"
+  tabindex="-1"
+  aria-labelledby="editBanyakPegawaiLabel"
+  aria-hidden="true"
+  style="width: 100%"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Edit Pegawai</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgEb"></div>
+      <form method="post" id="formeditbanyak">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label for="pegawaieb">Pilih Pegawai</label>
+              <select name="pegawaieb[]" id="pegawaieb">
+                <option value="">Pilih Pegawai</option>
+                {% for p in pegawai %}
+                <option value="{{p.pk}}">{{p.nama}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tteb" class="form-label">Tunjangan Tetap</label>
+              <input type="text" class="form-control" name="tteb" id="tteb" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tjeb" class="form-label">Tunjangan Jabatan</label>
+              <input type="text" class="form-control" name="tjeb" id="tjeb" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="gajieb" class="form-label">Gaji</label>
+              <input
+                type="text"
+                class="form-control"
+                name="gajieb"
+                id="gajieb"
+              />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tceb" class="form-label">Transfer / Cash</label>
+              <select name="tceb" id="tceb">
+                <option value="">Pilih Transfer / Cash</option>
+                <option value="Transfer">Transfer</option>
+                <option value="Cash">Cash</option>
+                <option value="Transfer_proporsional">
+                  Transfer_proporsional
+                </option>
+                <option value="Cash_proporsional">Cash_proporsional</option>
+              </select>
+            </div>
+            <div class="col-12 mb-3">
+              <label for="speb" class="form-label">Status Payroll</label>
+              <select name="speb" id="speb">
+                <option value="">Pilih Status Payroll</option>
+                <option value="0">Tidak Aktif</option>
+                <option value="1">Aktif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Edit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Banyak Pegawai -->
+
+<!-- By Divisi -->
+<div
+  class="modal fade"
+  id="editDPegawai"
+  tabindex="-1"
+  aria-labelledby="editDPegawaiLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editDPegawaiLabel">
+          Edit Pegawai Dengan Divisi
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgD"></div>
+      <form method="post" id="formeditD">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <label for="divisi">Pilih Divisi</label>
+              <select name="divisi" id="divisi">
+                <option value="">Pilih Divisi</option>
+                {% for d in divisi %}
+                <option value="{{d.pk}}">{{d.divisi}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="ttD" class="form-label">Tunjangan Tetap</label>
+              <input type="text" class="form-control" name="ttD" id="ttD" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tjD" class="form-label">Tunjangan Jabatan</label>
+              <input type="text" class="form-control" name="tjD" id="tjD" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="gajiD" class="form-label">Gaji</label>
+              <input type="text" class="form-control" name="gajiD" id="gajiD" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tcD" class="form-label">Transfer / Cash</label>
+              <select name="tcD" id="tcD">
+                <option value="">Pilih Transfer / Cash</option>
+                <option value="Transfer">Transfer</option>
+                <option value="Cash">Cash</option>
+                <option value="Transfer_proporsional">
+                  Transfer_proporsional
+                </option>
+                <option value="Cash_proporsional">Cash_proporsional</option>
+              </select>
+            </div>
+            <div class="col-12 mb-3">
+              <label for="spD" class="form-label">Status Payroll</label>
+              <select name="spD" id="spD">
+                <option value="">Pilih Status Payroll</option>
+                <option value="0">Tidak Aktif</option>
+                <option value="1">Aktif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnedit">
+            Edit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- By Divisi -->
+
+<!-- By Status Pegawai -->
+<div
+  class="modal fade"
+  id="editSPegawai"
+  tabindex="-1"
+  aria-labelledby="editSPegawaiLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editSPegawaiLabel">
+          Edit Pegawai {{status_pegawai}}
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgS"></div>
+      <form method="post" id="formeditS">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12 mb-3">
+              <label for="gajiS" class="form-label">Gaji</label>
+              <input type="text" class="form-control" name="gajiS" id="gajiS" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="ttS" class="form-label">Tunjangan Tetap</label>
+              <input type="text" class="form-control" name="ttS" id="ttS" />
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tjS" class="form-label">Tunjangan Jabatan</label>
+              <input type="text" class="form-control" name="tjS" id="tjS" />
+            </div>
+            <div class="col-md-12 mb-3">
+              <label for="tcS" class="form-label">Transfer / Cash</label>
+              <select name="tcS" id="tcS">
+                <option value="">Pilih Transfer / Cash</option>
+                <option value="Transfer">Transfer</option>
+                <option value="Cash">Cash</option>
+                <option value="Transfer_proporsional">
+                  Transfer_proporsional
+                </option>
+                <option value="Cash_proporsional">Cash_proporsional</option>
+              </select>
+            </div>
+            <div class="col-12 mb-3">
+              <label for="spS" class="form-label">Status Payroll</label>
+              <select name="spS" id="spS">
+                <option value="">Pilih Status Payroll</option>
+                <option value="0">Tidak Aktif</option>
+                <option value="1">Aktif</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary" id="btnedit">
+            Edit
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- By Status Pegawai -->
+
+<!-- Modal -->
+
+{% endblock content %} {% block js %}
+<script>
+  const token = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+  const pegawaiSelectize = $("#pegawai").selectize();
+  const tcSelectize = $("#tc").selectize();
+  const statusSelectize = $("#sp").selectize();
+  const pegawaiEbSelectize = $("#pegawaieb").selectize({
+    maxItems: null,
+  });
+  const tcEbSelectize = $("#tceb").selectize();
+  const statusEbSelectize = $("#speb").selectize();
+  const divisiSelectize = $("#divisi").selectize();
+  const statusDSelectize = $("#spD").selectize();
+  const tcDSelectize = $("#tcD").selectize();
+  const tcSSelectize = $("#tcS").selectize();
+  const statusSSelectize = $("#spS").selectize();
+  $("#gaji").on("keyup", (e) => {
+    $("#gaji").val(format($("#gaji").val()));
+  });
+
+  $("#gajiD").on("keyup", (e) => {
+    $("#gajiD").val(format($("#gajiD").val()));
+  });
+
+  $("#gajiS").on("keyup", (e) => {
+    $("#gajiS").val(format($("#gajiS").val()));
+  });
+  $("#gajieb").on("keyup", (e) => {
+    $("#gajieb").val(format($("#gajieb").val()));
+  });
+
+  $("#tj").on("keyup", (e) => {
+    $("#tj").val(format($("#tj").val()));
+  });
+  $("#tt").on("keyup", (e) => {
+    $("#tt").val(format($("#tt").val()));
+  });
+
+  $("#tjD").on("keyup", (e) => {
+    $("#tjD").val(format($("#tjD").val()));
+  });
+
+  $("#tjeb").on("keyup", (e) => {
+    $("#tjeb").val(format($("#tjeb").val()));
+  });
+
+  $("#ttD").on("keyup", (e) => {
+    $("#ttD").val(format($("#ttD").val()));
+  });
+
+  $("#tjS").on("keyup", (e) => {
+    $("#tjS").val(format($("#tjS").val()));
+  });
+
+  $("#ttS").on("keyup", (e) => {
+    $("#ttS").val(format($("#ttS").val()));
+  });
+
+  $("#tteb").on("keyup", (e) => {
+    $("#tteb").val(format($("#tteb").val()));
+  });
+
+  // TABLE +++
+  const sid = $("#sid").val();
+  const table = $("#payroll").DataTable({
+    ajax: {
+      url: "{% url 'pegawai_json' %}",
+      method: "post",
+      data: { sid },
+      headers: {
+        "X-CSRFToken": token,
+      },
+      error: (err) => {
+        $("#msg p").remove();
+        $("#msg").append(
+          `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+        );
+      },
+    },
+    columns: [
+      {
+        data: null,
+        render: (data, type, row, meta) => {
+          return `<button class="btn btn-outline-primary" data-target="#editPegawai" data-toggle="modal" data-status_payroll="${row.status_payroll}" data-pegawai="${row.id}" data-tt="${row.tt}" data-tj="${row.tj}" data-tc="${row.tc}" data-gaji="${row.gaji}">Edit</button>`;
+        },
+      },
+      {
+        data: "nama",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "nik",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "divisi",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "tgl_masuk",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "masa_kerja",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "rek_dana",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "no_rekening",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "gaji",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "t_masakerja",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "tj",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "tt",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "tk_premi",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "ks_premi",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "tc",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+      {
+        data: "status_payroll",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${data}</p>`;
+        },
+      },
+    ],
+    rowCallback: function (row, data) {
+      $("td", row).eq(0).addClass("text-dark");
+      $("td", row).eq(1).addClass("text-dark");
+      $("td", row).eq(2).addClass("text-dark");
+      $("td", row).eq(3).addClass("text-dark");
+      $("td", row).eq(4).addClass("text-dark");
+      $("td", row).eq(5).addClass("text-dark");
+      $("td", row).eq(6).addClass("text-dark");
+      $("td", row).eq(7).addClass("text-dark");
+      $("td", row).eq(8).addClass("text-dark");
+      $("td", row).eq(9).addClass("text-dark");
+      $("td", row).eq(10).addClass("text-dark");
+      $("td", row).eq(11).addClass("text-dark");
+      $("td", row).eq(12).addClass("text-dark");
+    },
+    scrollY: 300,
+    paging: false,
+    processing: true,
+    bLengthChange: false,
+  });
+
+  // TABLE ++
+
+  // Proses Edit
+  $("#formedit").on("submit", (e) => {
+    e.preventDefault();
+    const pegawai = $("#pegawai").val() ? $("#pegawai").val() : undefined;
+    const gaji = $("#gaji").val()
+      ? $("#gaji")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tt = $("#tt").val()
+      ? $("#tt")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tj = $("#tj").val()
+      ? $("#tj")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tc = $("#tc").val() ? $("#tc").val() : undefined;
+    const status = $("#sp").val() ? $("#sp").val() : undefined;
+
+    $.ajax({
+      url: "{% url 'edit_json' %}",
+      method: "post",
+      data: { pegawai, gaji, status, tt, tj, tc },
+      headers: {
+        "X-CSRFToken": token,
+      },
+      success: (e) => {
+        $("#msgP p").remove();
+        table.ajax.reload();
+        pegawaiSelectize[0].selectize.clear();
+        $("#gaji").val("");
+        $("#tj").val("");
+        $("#tt").val("");
+        statusSelectize[0].selectize.clear();
+        tcSelectize[0].selectize.clear();
+        $("#editPegawai").modal("hide");
+      },
+      error: (err) => {
+        $("#msgP p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgP").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgP").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+  // Proses edit
+
+  // Proses Edit Banyak
+  $("#formeditbanyak").on("submit", function (e) {
+    e.preventDefault();
+    const pegawai =
+      $("#pegawaieb").val().length > 0 ? $("#pegawaieb").val() : undefined;
+    console.log(pegawai);
+    const tt = $("#tteb").val()
+      ? $("#tteb")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tj = $("#tjeb").val()
+      ? $("#tjeb")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const gaji = $("#gajieb").val()
+      ? $("#gajieb")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tc = $("#tceb").val() ? $("#tceb").val() : undefined;
+    const sp = $("#speb").val() ? $("#speb").val() : undefined;
+
+    $.ajax({
+      url: '{% url "editeb_json" %}',
+      method: "POST",
+      data: { pegawai, tt, tj, gaji, tc, sp },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgEb p").remove();
+        $("#payroll").DataTable().ajax.reload();
+        $("#editBanyakPegawai").modal("hide");
+      },
+      error: (err) => {
+        $("#msgEb p").remove();
+        if (err.responseJSON?.msg) {
+          if (err.responseJSON.idps) {
+            pegawaiEbSelectize[0].selectize.clear();
+            pegawaiEbSelectize[0].selectize.setValue(err.responseJSON.idps);
+          }
+          $("#msgEb").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgEb").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+  // Proses Edit Banyak
+
+  // Proses Edit By Divisi
+  $("#formeditD").on("submit", function (e) {
+    e.preventDefault();
+    const divisi = $("#divisi").val() ? $("#divisi").val() : undefined;
+    const gaji = $("#gajiD").val()
+      ? $("#gajiD")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tt = $("#ttD").val()
+      ? $("#ttD")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tj = $("#tjD").val()
+      ? $("#tjD")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tc = $("#tcD").val() ? $("#tcD").val() : undefined;
+    const status = $("#spD").val() ? $("#spD").val() : undefined;
+    $.ajax({
+      url: "{% url 'editD_json' %}",
+      method: "post",
+      data: { divisi, gaji, status, tt, tj, tc, sid },
+      headers: {
+        "X-CSRFToken": token,
+      },
+      success: (e) => {
+        $("#msgD p").remove();
+        table.ajax.reload();
+        divisiSelectize[0].selectize.clear();
+        $("#gajiD").val("");
+        $("#ttD").val("");
+        $("#tjD").val("");
+        statusDSelectize[0].selectize.clear();
+        tcDSelectize[0].selectize.clear();
+        $("#editDPegawai").modal("hide");
+      },
+      error: (err) => {
+        $("#msgD p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgD").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgD").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+  // Proses Edit By Divisi
+
+  // Proses Edit By Divisi
+  $("#formeditS").on("submit", function (e) {
+    e.preventDefault();
+    const divisi = $("#divisi").val() ? $("#divisi").val() : undefined;
+    const gaji = $("#gajiS").val()
+      ? $("#gajiS")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tt = $("#ttS").val()
+      ? $("#ttS")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tj = $("#tjS").val()
+      ? $("#tjS")
+          .val()
+          .replace(/[^,\d]/gi, "")
+      : undefined;
+    const tc = $("#tcS").val() ? $("#tcS").val() : undefined;
+    const status = $("#spS").val() ? $("#spS").val() : undefined;
+    $.ajax({
+      url: "{% url 'editS_json' %}",
+      method: "post",
+      data: { sid, gaji, status, tt, tj, tc },
+      headers: {
+        "X-CSRFToken": token,
+      },
+      success: (e) => {
+        $("#msgS p").remove();
+        table.ajax.reload();
+        $("#gajiS").val("");
+        $("#ttS").val("");
+        $("#tjS").val("");
+        statusSSelectize[0].selectize.clear();
+        tcSSelectize[0].selectize.clear();
+        $("#editSPegawai").modal("hide");
+      },
+      error: (err) => {
+        $("#msgS p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgS").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgS").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+  // Proses Edit By Divisi
+
+  // Modal Show Pegawai
+
+  $("#editPegawai").on("show.bs.modal", function (e) {
+    const pegawai = $(e.relatedTarget).data("pegawai");
+    const tt = $(e.relatedTarget).data("tt");
+    const tj = $(e.relatedTarget).data("tj");
+    const tc = $(e.relatedTarget).data("tc");
+    const gaji = $(e.relatedTarget).data("gaji");
+    const status_payroll = $(e.relatedTarget).data("status_payroll");
+
+    $("#tt").val(format(tt));
+    $("#tj").val(format(tj));
+    $("#gaji").val(format(gaji));
+    pegawaiSelectize[0].selectize.setValue(pegawai);
+    pegawaiSelectize[0].selectize.disable();
+    statusSelectize[0].selectize.setValue(status_payroll);
+    tcSelectize[0].selectize.setValue(tc);
+  });
+
+  // Modal Show Pegawai
+</script>
+{% endblock js %}

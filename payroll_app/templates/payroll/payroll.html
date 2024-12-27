@@ -1,0 +1,425 @@
+{% extends "base/index.html" %} {% block content %}
+
+<section id="content">
+  {% for message in messages %}
+    <div class="container-fluid p-0">
+        {% if 'safe' in message.tags %}
+        <div class="alert alert-info alert-dismissible" role="alert" >
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+            <span class="tx-16"></span>{{ message | safe }}</span>
+        </div>
+        {% elif message.tags == "error" %}
+        <div class="alert alert-danger alert-dismissible" role="alert" >
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+            <span class="tx-16"></span>{{ message | safe }}</span>
+        </div>
+        {% else %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert" >
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+            <span class="tx-16"></span>{{ message }}</span>
+        </div>
+        {% endif %}
+    </div>
+  {% endfor %}
+  <div id="msg"></div>
+  <div class="d-flex justify-content-between konfirmasi">
+    <h5 class="text-dark">Periode <b class="text-primary">{{periode}}</b></h5>
+    {% if modal %}
+    <form action="{% url 'csvp' %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="sid" value="{{sid}}" />
+      <button class="btn btn-primary" id="csvp">CSV Preview</button>
+    </form>
+    {% else %}
+    <button class="btn btn-primary" id="bcsv">Buat CSV</button>
+    {% endif %}
+  </div>
+  <input type="hidden" id="status" value="{{sid}}" />
+  {% csrf_token %}
+  <div class="">
+    <table id="payroll" class="table">
+      <thead>
+        <tr>
+          <th class="text-dark">Action</th>
+          <th class="text-dark">Pegawai</th>
+          <th class="text-dark">Nik</th>
+          <th class="text-dark">Bagian</th>
+          <th class="text-dark">Gapok</th>
+          <th class="text-dark">Tunj Jabatan</th>
+          <th class="text-dark">Tunj Tetap</th>
+          <th class="text-dark">Tunj M.Kerja</th>
+          <th class="text-dark">Insentif</th>
+          <th class="text-dark">Gaji</th>
+          <th class="text-dark">Gaji CM</th>
+          <th class="text-dark">Pot Absensi</th>
+          <th class="text-dark">Total Potongan</th>
+          <th class="text-dark">THP</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+<div
+  class="modal fade"
+  id="konfirmasiPembayaran"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="konfirmasiPembayaranLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="konfirmasiPembayaranLabel">
+          Konfirmasi Pembayaran
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgKonfirmasi"></div>
+      <div class="modal-body">
+        <b>Apakah anda yakin?</b>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">
+          Batalkan
+        </button>
+        <button type="button" class="btn btn-primary" id="konfirmasibutton">
+          Konfirmasi
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="modalEditPayroll"
+  tabindex="-1"
+  aria-labelledby="modalEditPayrollLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditPayrollLabel">Edit Potongan</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="" method="post" id="editPayroll">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div id="msgEditPayroll"></div>
+          <div class="row">
+            <div class="col-md-12">
+              <input type="hidden" name="idEditPot" id="idEditPot" />
+              <label for="editPegawai" class="form-label">Pegawai</label>
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editPegawai"
+                id="editPegawai"
+                disabled
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <input type="hidden" name="idEditPot" id="idEditPot" />
+              <label for="editPotHari" class="form-label">Potongan Hari</label>
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editPotHari"
+                id="editPotHari"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <input type="hidden" name="idEditPot" id="idEditPot" />
+              <label for="editPotPiutang" class="form-label"
+                >Potongan Piutang</label
+              >
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editPotPiutang"
+                id="editPotPiutang"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <input type="hidden" name="idEditPot" id="idEditPot" />
+              <label for="editBtk" class="form-label">BPJS_TK</label>
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editBtk"
+                id="editBtk"
+                class="form-control"
+              />
+              <input type="hidden" name="" id="editIdPayroll" />
+            </div>
+            <div class="col-md-6 mt-3">
+              <input type="hidden" name="idEditPot" id="idEditPot" />
+              <label for="editBks" class="form-label">BPJS_KS</label>
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editBks"
+                id="editBks"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Tambah</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %} {% block js %}
+
+<script>
+  const status = $("#status").val();
+  const token = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+  $("#msg p").remove();
+  $("#payroll").DataTable({
+    ajax: {
+      url: "{% url 'payroll_json' %}",
+      method: "POST",
+      data: { status: status },
+      headers: { "X-CSRFToken": token },
+      error: (err) => {
+        if (err.responseJSON?.msg) {
+          $("#msg").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msg").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    },
+    columns: [
+      {
+        data: null,
+        render: (data, type, row, meta) => {
+          return `<button class="btn btn-outline-info" data-target="#modalEditPayroll" data-toggle="modal" data-nama="${row.pegawai}" data-nik="${row.nik}" data-potpit="${row.pot_piutang}" data-pothr="${row.pot_hari}" data-btk="${row.bpjs_tk}" data-bks="${row.bpjs_ks}" data-id="${row.id}">Edit</button>`;
+        },
+      },
+      { data: "pegawai" },
+      { data: "nik" },
+      { data: "bagian" },
+      {
+        data: "gaji",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "tunjangan_jabatan",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "tunjangan_tetap",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "tunjangan_masakerja",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "insentif",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "gaji_t",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "gaji_cm",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "pot_rupiah",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "total_pot",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+      {
+        data: "total_gaji",
+        render: (data, type, row, meta) => {
+          return `<p class="text-nowrap">${format(data)}</p>`;
+        },
+      },
+    ],
+    rowCallback: function (row, data) {
+      $("td", row).eq(0).addClass("text-dark");
+      $("td", row).eq(1).addClass("text-dark");
+      $("td", row).eq(2).addClass("text-dark");
+      $("td", row).eq(3).addClass("text-dark");
+      $("td", row).eq(4).addClass("text-dark");
+      $("td", row).eq(5).addClass("text-dark");
+      $("td", row).eq(6).addClass("text-dark");
+      $("td", row).eq(6).addClass("text-dark");
+      $("td", row).eq(7).addClass("text-dark");
+      $("td", row).eq(8).addClass("text-dark");
+      $("td", row).eq(9).addClass("text-dark");
+      $("td", row).eq(10).addClass("text-dark");
+      $("td", row).eq(11).addClass("text-dark");
+      $("td", row).eq(12).addClass("text-dark");
+      $("td", row).eq(13).addClass("text-dark");
+    },
+    destroy: true,
+    ordering: false,
+    paging: false,
+    scrollX: "100%",
+    scrollY: 300,
+    bLengthChange: false,
+    processing: true,
+  });
+
+  $(document).on("click", "#bcsv", function (e) {
+    const statusid = $("#status").val();
+    $.ajax({
+      url: '{% url "bcsv" %}',
+      method: "post",
+      data: { statusid },
+      headers: {
+        "X-CSRFToken": token,
+      },
+      success: (e) => {
+        window.location.reload();
+      },
+      error: (err) => {
+        $("#msgKonfirmasi p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgKonfirmasi").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgKonfirmasi").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<script>
+  $("#modalEditPayroll").on("show.bs.modal", function (e) {
+    const pothr = $(e.relatedTarget).data("pothr");
+    const potpit = $(e.relatedTarget).data("potpit");
+    const btk = $(e.relatedTarget).data("btk");
+    const bks = $(e.relatedTarget).data("bks");
+    const nik = $(e.relatedTarget).data("nik");
+    const nama = $(e.relatedTarget).data("nama");
+    const id = $(e.relatedTarget).data("id");
+    $("#editPegawai").val(`${nama} - ${nik}`);
+    $("#editPotHari").val(format(pothr));
+    $("#editPotPiutang").val(format(potpit));
+    $("#editBtk").val(format(btk));
+    $("#editBks").val(format(bks));
+    $("#editIdPayroll").val(id);
+  });
+
+  $("#editPotHari").on("keyup", function (e) {
+    $("#editPotHari").val(format($("#editPotHari").val()));
+  });
+  $("#editPotPiutang").on("keyup", function (e) {
+    $("#editPotPiutang").val(format($("#editPotPiutang").val()));
+  });
+  $("#editBtk").on("keyup", function (e) {
+    $("#editBtk").val(format($("#editBtk").val()));
+  });
+  $("#ediBks").on("keyup", function (e) {
+    $("#editBks").val(format($("#editBks").val()));
+  });
+
+  $("#editPayroll").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#editIdPayroll").val()
+      ? $("#editIdPayroll").val()
+      : undefined;
+    const pot_hari = $("#editPotHari").val()
+      ? $("#editPotHari").val().replace(/[^\d]/g, "")
+      : undefined;
+    const pot_piutang = $("#editPotPiutang").val()
+      ? $("#editPotPiutang").val().replace(/[^\d]/g, "")
+      : undefined;
+    const bpjs_tk = $("#editBtk").val()
+      ? $("#editBtk").val().replace(/[^\d]/g, "")
+      : undefined;
+    const bpjs_ks = $("#editBks").val()
+      ? $("#editBks").val().replace(/[^\d]/g, "")
+      : undefined;
+    $.ajax({
+      url: '{% url "edit_payroll" %}',
+      method: "post",
+      data: { id, pot_hari, pot_piutang, bpjs_tk, bpjs_ks },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgEditPayroll p").remove();
+        $("#modalEditPayroll").modal("hide");
+        $("#payroll").DataTable().ajax.reload();
+      },
+      error: (err) => {
+        $("#msgEditPayroll p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgEditPayroll").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgEditPayroll").append(
+            `<p class="alert alert-danger">Terjadi kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+{% endblock js %}

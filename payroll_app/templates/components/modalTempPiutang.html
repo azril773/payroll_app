@@ -1,0 +1,179 @@
+<div
+  class="modal fade"
+  id="piutangPostModal"
+  tabindex="-1"
+  aria-labelledby="piutangPostModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="piutangPostModalLabel">Posting Piutang</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% csrf_token %}
+      <div class="modal-body">
+        <div id="msgModalPostPtg"></div>
+        <table id="piutangPostTable" class="table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Tanggal</th>
+              <th>Nama</th>
+              <th>Jenis Piutang</th>
+              <th>Total Piutang</th>
+              <th>Pot Piutang</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="postingSelected">
+          Posting Yang Dipilih
+        </button>
+        <button class="btn btn-success" id="postingAll">Posting Semua</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="editPostModal"
+  tabindex="-1"
+  aria-labelledby="editPostModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editPostModalLabel">
+          Edit Posting Piutang
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="" method="post" id="editPostForm">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div id="msgEditPostModal"></div>
+          <div class="row">
+            <input type="hidden" name="id" id="idEdit" />
+            <div class="col-md-12">
+              <label for="editPostTanggal" class="form-label">Tanggal</label>
+              <span class="text-danger">*</span>
+              <input
+                type="date"
+                name="editPostTanggal"
+                id="editPostTanggal"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editPostPegawai" class="form-label">Pegawai</label>
+              <span class="text-danger">*</span>
+              <select name="editPostPegawai" id="editPostPegawai">
+                <option value="">Pilih Pegawai</option>
+                {% for p in pegawai %}
+                <option value="{{p.pk}}">{{p.nama}}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editPostJenis" class="form-label">Jenis</label>
+              <span class="text-danger">*</span>
+              <select name="editPostJenis" id="editPostJenis">
+                <option value="">Pilih Jenis</option>
+                {% for j in jenis %}
+                <option value="{{j.pk}}">
+                  {{j.jenis_transaksi.jenis_transaksi}}
+                </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editPostNilai" class="form-label"
+                >Nilai (Rupiah)</label
+              >
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editPostNilai"
+                id="editPostNilai"
+                class="form-control"
+              />
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editPostPot" class="form-label"
+                >Potongan Piutang</label
+              >
+              <span class="text-danger">*</span>
+              <input
+                type="text"
+                name="editPostPot"
+                id="editPostPot"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          <button class="btn btn-primary" type="submit">Edit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="deletePostModal"
+  tabindex="-1"
+  aria-labelledby="deletePostModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deletePostModalLabel">
+          Hapus Posting Piutang
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      {% csrf_token %}
+      <form action="" method="post" id="deletePostForm">
+        <div class="modal-body">
+          <div id="msgPostDeleteModal"></div>
+          <input type="hidden" name="" id="idDelete" />
+          Apakah Anda Yakin?
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
+          <button class="btn btn-danger" type="submit">Hapus</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse !important;
+  }
+  th,
+  td {
+    padding: 2px;
+    margin: 0;
+    border-bottom: 1px solid black !important;
+    line-height: 1;
+  }
+  @media print and (width: 8.5in) and (height: 11in) {
+    @page {
+      margin: 1in;
+    }
+  }
+
+  @page {
+    size: 297mm 420mm;
+    margin: 10%%;
+  }
+</style>
+<table>
+  <tr>
+    <td>No Rek</td>
+    <td>Nama</td>
+    <td>Mata Uang</td>
+    <td>Gaji</td>
+    <td>Keterangan</td>
+    <td>Total Rekening</td>
+    <td>Tanggal Bayar</td>
+    <td>Email</td>
+  </tr>
+  <tr>
+    <td>{{data.rek}}</td>
+    <td>{{data.nama}}</td>
+    <td>{{data.mata_uang}}</td>
+    <td>{{data.gaji}}</td>
+    <td>{{data.keterangan}}</td>
+    <td>{{data.total_rek}}</td>
+    <td>{{data.tanggal_bayar}}</td>
+    <td>{{data.email}}</td>
+  </tr>
+  {% for dt in data.data %}
+  <tr>
+    <td>{{dt.rek}}</td>
+    <td>{{dt.nama}}</td>
+    <td>{{dt.mata_uang}}</td>
+    <td>{{dt.gaji}}</td>
+    <td>{{dt.keterangan}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  {% endfor %}
+</table>
+<script>
+  window.print();
+  setTimeout(function () {
+    window.close();
+  }, 1000);
+</script>

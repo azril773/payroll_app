@@ -1,0 +1,330 @@
+{% extends "base/index.html" %} {% block content %}
+<div class="d-flex justify-content-end">
+  <button
+    class="btn btn-success"
+    data-toggle="modal"
+    data-target="#tambahTtransModal"
+  >
+    Tambah Tanggal Transfer
+  </button>
+</div>
+<table class="table" id="ttransTable">
+  {% csrf_token %}
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Jenis Transfer</th>
+      <th>Tanggal Transfer</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<!-- Modal Tambah Ttrans -->
+<div
+  class="modal fade"
+  id="tambahTtransModal"
+  tabindex="-1"
+  aria-labelledby="tambahTtransModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="tambahTtransModalLabel">
+          Tambah Tanggal Transfer
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgTt"></div>
+      <form method="post" id="formtambahttrans">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mt-3">
+              <label for="tambahJenis" class="form-label">Jenis Transfer</label>
+              <select name="tambahJenis" id="tambahJenis">
+                <option value="">Pilih Jenis</option>
+                <option value="payroll">Payroll</option>
+                <option value="kasbon">Kasbon</option>
+                <option value="thr">THR</option>
+              </select>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="tambahTanggal" class="form-label"
+                >Tanggal Transfer</label
+              >
+              <input
+                type="date"
+                name="tambahTanggal"
+                id="tambahTanggal"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Tambah Ttrans -->
+
+<!-- Modal Edit Ttrans -->
+<div
+  class="modal fade"
+  id="editTtransModal"
+  tabindex="-1"
+  aria-labelledby="editTtransModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editTtransModalLabel">
+          Edit Tanggal Transfer
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgEt"></div>
+      <form method="post" id="formeditttrans">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mt-3">
+              <input type="hidden" name="idEdit" id="idEdit" />
+              <label for="editJenis" class="form-label">Jenis Transfer</label>
+              <select name="editJenis" id="editJenis">
+                <option value="">Pilih Jenis</option>
+                <option value="payroll">Payroll</option>
+                <option value="kasbon">Kasbon</option>
+                <option value="thr">THR</option>
+              </select>
+            </div>
+            <div class="col-md-6 mt-3">
+              <label for="editTanggal" class="form-label"
+                >Tanggal Transfer</label
+              >
+              <input
+                type="date"
+                name="editTanggal"
+                id="editTanggal"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-primary">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Edit Ttrans -->
+
+<!-- Modal Delete Ttrans -->
+<div
+  class="modal fade"
+  id="deleteTtransModal"
+  tabindex="-1"
+  aria-labelledby="deleteTtransModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteTtransModalLabel">
+          Hapus Tanggal Transfer
+        </h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div id="msgDt"></div>
+      <form method="post" id="formdeletettrans">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 d-flex justify-content-start">
+              Apakah Anda yakin?
+              <input type="hidden" name="idDelete" id="idDelete" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-danger">hapus</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Modal Hapus Ttrans -->
+{% endblock content %} {% block js %}
+<script>
+  const tambahJenisSelectize = $("#tambahJenis").selectize();
+  const editJenisSelectize = $("#editJenis").selectize();
+  const token = document.querySelector("input[name=csrfmiddlewaretoken]").value;
+  $("#ttransTable").DataTable({
+    ajax: {
+      url: "{% url 'ttrans_json' %}",
+      mehtod: "post",
+      headers: { "X-CSRFToken": token },
+    },
+    columns: [
+      {
+        data: "id",
+        render: (data, type, row, meta) => {
+          return `<button class="btn btn-outline-primary" data-jenis="${row.jenis}" data-tanggal="${row.tanggal}" data-id="${row.id}" data-toggle="modal" data-target="#editTtransModal">Edit</button>&nbsp<button class="btn btn-outline-danger"data-id="${row.id}" data-toggle="modal" data-target="#deleteTtransModal">Hapus</button>`;
+        },
+      },
+      { data: "jenis" },
+      { data: "tanggal" },
+    ],
+    columnDefs: [{ target: [0, 1, 2], className: "text-left" }],
+    bLengthChange: false,
+  });
+
+  $("#formtambahttrans").on("submit", function (e) {
+    e.preventDefault();
+    const jenis = $("#tambahJenis").val() ? $("#tambahJenis").val() : undefined;
+    const tanggal = $("#tambahTanggal").val()
+      ? $("#tambahTanggal").val()
+      : undefined;
+    $.ajax({
+      url: "{% url 'tambah_ttrans_json' %}",
+      method: "post",
+      data: { jenis, tanggal },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgTt p").remove();
+        tambahJenisSelectize[0].selectize.clear();
+        $("#ttransTable").DataTable().ajax.reload();
+        $("#tambahTanggal").val("");
+        $("#tambahTtransModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgTt p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgTt").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgTt").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<script>
+  $("#editTtransModal").on("show.bs.modal", function (e) {
+    const jenis = $(e.relatedTarget).data("jenis");
+    const tanggal = $(e.relatedTarget).data("tanggal");
+    const id = $(e.relatedTarget).data("id");
+
+    editJenisSelectize[0].selectize.setValue(jenis);
+    $("#editTanggal").val(tanggal);
+    $("#idEdit").val(id);
+  });
+  $("#formeditttrans").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#idEdit").val() ? $("#idEdit").val() : undefined;
+    const jenis = $("#editJenis").val() ? $("#editJenis").val() : undefined;
+    const tanggal = $("#editTanggal").val()
+      ? $("#editTanggal").val()
+      : undefined;
+    $.ajax({
+      url: "{% url 'edit_ttrans_json' %}",
+      method: "post",
+      data: { id, jenis, tanggal },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgEt p").remove();
+        tambahJenisSelectize[0].selectize.clear();
+        $("#ttransTable").DataTable().ajax.reload();
+        $("#editTtransModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgEt p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgEt").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgEt").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+
+<script>
+  $("#deleteTtransModal").on("show.bs.modal", function (e) {
+    const id = $(e.relatedTarget).data("id");
+    $("#idDelete").val(id);
+  });
+
+  $("#formdeletettrans").on("submit", function (e) {
+    e.preventDefault();
+    const id = $("#idDelete").val() ? $("#idDelete").val() : undefined;
+    $.ajax({
+      url: "{% url 'delete_ttrans_json' %}",
+      method: "post",
+      data: { id },
+      headers: { "X-CSRFToken": token },
+      success: (e) => {
+        $("#msgDt p").remove();
+        $("#ttransTable").DataTable().ajax.reload();
+        $("#deleteTtransModal").modal("hide");
+      },
+      error: (err) => {
+        $("#msgDt p").remove();
+        if (err.responseJSON?.msg) {
+          $("#msgDt").append(
+            `<p class="alert alert-danger">${err.responseJSON.msg}</p>`
+          );
+        } else {
+          $("#msgDt").append(
+            `<p class="alert alert-danger">Terjadi Kesalahan</p>`
+          );
+        }
+      },
+    });
+  });
+</script>
+{% endblock js%}
