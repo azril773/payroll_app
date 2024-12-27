@@ -127,7 +127,14 @@
             : pecah.join(".");
         return result;
       }
-    </script>
+
+      function formatHarga(value){
+        console.log(value)
+        const number = Number(value).toLocaleString()
+        const result = number.split(",").join(".")
+        return result
+      }
+      </script>
     {% block js %}{% endblock js %}
 
 </body>

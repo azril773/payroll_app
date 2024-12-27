@@ -762,7 +762,7 @@ def csvp(r):
                 'gaji':totalGaji["bayar"],
                 'keterangan':f"Gaji {nama_bulan(tbayar.month)}-{tbayar.year}",
                 'total_rek':totalGaji["count"],
-                'tanggal_bayar':tbayar,
+                'tanggal_bayar':datetime.strftime(tbayar,"%Y-%m-%d"),
                 'email':rek.email,
                 'data':[]
             }
@@ -971,7 +971,7 @@ def printC(r):
                 'gaji':[totalGaji["bayar"]],
                 'keterangan':[f"Gaji {nama_bulan(tbayar.month)}-{tbayar.year}"],
                 'total_rek':[totalGaji["count"]],
-                'tanggal_bayar':[tbayar],
+                'tanggal_bayar':[datetime.strftime(tbayar,"%Y-%m-%d")],
                 'email':[rek.email],
             }
             for g in gaji_db.objects.using(cabang).filter(status_pegawai__id=int(sid),rek_sd_id=int(rek.pk)):
@@ -1068,7 +1068,7 @@ def printP(r):
                 'gaji':totalGaji["bayar"],
                 'keterangan':f"Gaji {nama_bulan(tbayar.month)}-{tbayar.year}",
                 'total_rek':totalGaji["count"],
-                'tanggal_bayar':tbayar,
+                'tanggal_bayar':datetime.strftime(tbayar,"%Y-%m-%d"),
                 'email':rek.email,
                 "data":[]
             }

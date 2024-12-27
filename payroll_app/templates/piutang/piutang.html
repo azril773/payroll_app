@@ -143,19 +143,19 @@
       {
         data: "piutang",
         render: (data, type, row, meta) => {
-          return `<span>${format(data)}</span>`;
+          return `<span>${formatHarga(data)}</span>`;
         },
       },
       {
         data: "ketemu",
         render: (data, type, row, meta) => {
-          return `<span>${format(data)}</span>`;
+          return `<span>${formatHarga(data)}</span>`;
         },
       },
       {
         data: "pot",
         render: (data, type, row, meta) => {
-          return `<span>${format(data)}</span>`;
+          return `<span>${formatHarga(data)}</span>`;
         },
       },
     ],
@@ -269,13 +269,13 @@
         {
           data: "piutang",
           render: (data, type, row, meta) => {
-            return `<span class="text-right">${format(data)}</span>`;
+            return `<span class="text-right">${formatHarga(data)}</span>`;
           },
         },
         {
           data: "pot_piutang",
           render: (data, type, row, meta) => {
-            return `<span class="text-right">${format(data)}</span>`;
+            return `<span class="text-right">${formatHarga(data)}</span>`;
           },
         },
       ],
@@ -524,8 +524,8 @@
         {
           data: "nilai",
           render: (data, type, row, meta) => {
-            const formatHarga = format(data);
-            return `<span>${formatHarga}</span>`;
+            const formatHrg = formatHarga(data);
+            return `<span>${formatHrg}</span>`;
           },
         },
       ],
