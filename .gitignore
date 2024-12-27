@@ -99,7 +99,9 @@ celerybeat-schedule.*
 # Environments 
 .env 
 .venv 
-env/ 
+env/
+env
+env/*
 venv/ 
 ENV/ 
 env.bak/ 
@@ -137,5 +139,5 @@ GitHub.sublime-settings
 .history
 
 payroll/settings.py
-payroll_app/migrations
+payroll_app/migrations/*
 static/excel/*
