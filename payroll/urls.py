@@ -25,10 +25,17 @@ from django.contrib import messages
 def authlogin(r):
     username = r.POST.get("username")
     password = r.POST.get("password")
+    cabang = r.POST.get("cabang")
     result = authenticate(username=username,password=password)
     if result is not None:
         id_user = result.pk
-        akses_cabang = akses_cabang_db.objects.filter(user_id=id_user)
+        print(cabang) 
+
+        cabang = cabang_db.objects.filter(cabang=cabang).last()
+        if cabang is None:
+            messages.error(r,'Cabang tidak ada')
+            return redirect("/")
+        akses_cabang = akses_cabang_db.objects.filter(user_id=id_user,cabang_id=cabang.pk)
         if akses_cabang.exists():
             r.session["ccabang"] = akses_cabang[0].cabang.cabang
             r.session["cabang"] = [ac.cabang.cabang for ac in akses_cabang]
