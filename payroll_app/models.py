@@ -314,6 +314,8 @@ class jenis_transaksi_db(models.Model):
     edit_by = models.CharField(max_length=100,null=True)
     add_date = models.DateTimeField(auto_now_add=True,null=True)
     edit_date = models.DateTimeField(auto_now=True,null=True)
+    def __str__(self):
+        return self.jenis_transaksi
 
 
 class jenis_piutang_db(models.Model):

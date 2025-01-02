@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from payroll_app.admin import cirebon,sumedang, garut, cihideung, tasik
 from django.urls import path, include
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate, views 
@@ -53,6 +54,11 @@ def authlogin(r):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('cirebonadmin/', cirebon.urls),
+    path('tasikadmin/', tasik.urls),
+    path('sumedangadmin/', sumedang.urls),
+    path('cihideungadmin/', cihideung.urls),
+    path('garutadmin/', garut.urls),
     path("", views.LoginView.as_view(template_name="auth/login.html"), name="login"),
     path('login/', authlogin, name="next"),
     path('app/', include("payroll_app.routes.urls")),

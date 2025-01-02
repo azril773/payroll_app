@@ -65,7 +65,8 @@ def piutang(r):
                 'jenis':jenis,
                 'countTemp':count["count"],
                 'jenis_transaksi':jtransaksi,
-                'status':status_payroll
+                'status':status_payroll,
+                "staff":r.user.is_staff,
             }
             return render(r,"piutang/piutang.html",data)
         

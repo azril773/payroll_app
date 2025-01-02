@@ -24,6 +24,7 @@ def payroll(r,sid):
 
             data = {
                 "status":status_payroll,
+                "staff":r.user.is_staff,
                 "sid":sid,
                 'modal':modal,
                 "gaji":gaji,

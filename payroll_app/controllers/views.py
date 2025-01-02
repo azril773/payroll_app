@@ -20,6 +20,7 @@ def beranda(r):
         if akses.akses == "root" or akses.akses == "hrd":
             status_payroll = status_pegawai_payroll_db.objects.using(f"p{r.session['ccabang']}").all()
             data = {
+                "staff":r.user.is_staff,
                 "status":status_payroll
             }
             return render(r,'beranda/beranda.html',data)
@@ -38,11 +39,15 @@ def setup(r):
     try:
         rekening = rekening_db.objects.using(r.session["ccabang"]).get(bpjs=0)
     except:
+        if r.user.is_staff:
+            return redirect("login")
         messages.error(r,"Rekening non bpjs tidak ada")
         return redirect("login")
     try:
         rek_bpjs = rekening_db.objects.using(r.session["ccabang"]).get(bpjs=1)
     except:
+        if r.user.is_staff:
+            return redirect("login")
         messages.error(r,"Rekening bpjs tidak ada")
         return redirect("login")
     # print(status_payroll

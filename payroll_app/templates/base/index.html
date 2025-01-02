@@ -129,7 +129,7 @@
       }
 
       function formatHarga(value){
-        console.log(value)
+        value = value.toString().replace(/[^\d,]/g, "");
         const number = Number(value).toLocaleString()
         const result = number.split(",").join(".")
         return result

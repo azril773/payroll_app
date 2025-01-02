@@ -8,7 +8,8 @@ def pot_absensi(r):
         if akses.akses == "root" or akses.akses == 'hrd':
             status =status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
             return render(r,'pengaturan/pot_absensi.html',{
-                "status":status
+                "status":status,
+                "staff":r.user.is_staff,
             })
         else:
             return redirect("login")
@@ -78,7 +79,7 @@ def rek_sumber_dana(r):
     if akses is not None:
         if akses.akses == "root" or akses.akses == "hrd":
             status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
-            return render(r,"pengaturan/rek_sumber_dana.html",{"status":status})
+            return render(r,"pengaturan/rek_sumber_dana.html",{"status":status,"staff":r.user.is_staff})
         else:
             return JsonResponse({"status":'error',"msg":"Anda tidak memiliki akses"},status=400)
     else:
@@ -255,7 +256,7 @@ def ttrans(r):
     if akses is not None:
         if akses.akses == "root" or akses.akses == "hrd":
             status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
-            return render(r,"pengaturan/ttrans.html",{"status":status})
+            return render(r,"pengaturan/ttrans.html",{"status":status,"staff":r.user.is_staff})
         else:
             return JsonResponse({"status":'error',"msg":"Anda tidak memiliki akses"},status=400)
     else:

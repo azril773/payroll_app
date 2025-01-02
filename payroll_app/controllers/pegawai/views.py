@@ -19,6 +19,7 @@ def pegawai(r,sid):
             data = {
                 'status':statusall,
                 "pegawai":pegawai,
+                "staff":r.user.is_staff,
                 "divisi":divisi,
                 "sid":sid,
                 "status_pegawai":status[0].status_pegawai.status
