@@ -40,14 +40,14 @@ def setup(r):
         rekening = rekening_db.objects.using(r.session["ccabang"]).get(bpjs=0)
     except:
         if r.user.is_staff:
-            return redirect("login")
+            return redirect("pengaturan")
         messages.error(r,"Rekening non bpjs tidak ada")
         return redirect("login")
     try:
         rek_bpjs = rekening_db.objects.using(r.session["ccabang"]).get(bpjs=1)
     except:
         if r.user.is_staff:
-            return redirect("login")
+            return redirect("pengaturan")
         messages.error(r,"Rekening bpjs tidak ada")
         return redirect("login")
     # print(status_payroll

@@ -73,6 +73,7 @@ tasik.register(jenis_piutang_db,TasikAdmin)
 tasik.register(User,TasikAdmin)
 tasik.register(jenis_transaksi_db,TasikAdmin)
 tasik.register(summary_rekap_gaji_db,TasikAdmin)
+tasik.register(rekening_db,TasikAdmin)
 
 
 cihideung.register(jenis_piutang_db,CihideungAdmin)
