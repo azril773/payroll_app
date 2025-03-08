@@ -1,0 +1,62 @@
+{% extends "base/index.html" %} {% block content %}
+{% for message in messages %}
+        <div class="container-fluid p-0">
+            {% if 'safe' in message.tags %}
+            <div class="alert alert-info alert-dismissible" role="alert" >
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                <span class="tx-16"></span>{{ message | safe }}</span>
+            </div>
+            {% elif message.tags == "error" %}
+            <div class="alert alert-danger alert-dismissible" role="alert" >
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                <span class="tx-16"></span>{{ message | safe }}</span>
+            </div>
+            {% else %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible" role="alert" >
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                <span class="tx-16"></span>{{ message }}</span>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+<h3>Akses</h3>
+<form action="{% url 'takses' %}" method="post">
+  {% csrf_token %}
+  <div class="row">
+    <div class="col-md-4">
+      <label for="user">User</label>
+      <select name="user" id="user">
+        <option value="">Pilih User</option>
+        {% for u in user %}
+          <option value="{{u.id}}">{{u.nama}}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label for="akses">Akses</label>
+      <select name="akses" id="akses">
+        <option value="">Pilih Akses</option>
+        <option value="root">Root</option>
+        <option value="hrd">HRD</option>
+        <option value="admin">Admin</option>
+      </select>
+    </div>
+    <div class="col-md-4 d-flex align-items-end" >
+      <button type="submit" class="btn btn-primary">Proses</button>
+    </div>
+  </div>
+</form>
+{% endblock content %} {% block js %}
+<script>
+  $("#user").selectize({
+    maxItems:null
+  })
+  $("#akses").selectize()
+</script>
+{% endblock js%}
