@@ -34,17 +34,6 @@ def setup(r):
         return redirect("login")
     # print(status_payroll
     luserid = []
-    for p in pegawai_db.objects.using(r.session["ccabang"]).all():
-        if p.tgl_masuk is not None:
-            try:
-                tgl = datetime.strptime(str(p.tgl_masuk),"%Y-%m-%d")
-                masakerja = fmkerja_lengkap(tgl)
-                p.masa_kerja = masakerja["masa"]
-                p.save(using=r.session["ccabang"])
-            except Exception as e:
-                continue
-        else:
-            continue
     for status in status_payroll:
         for p in pegawai_db.objects.using(r.session['ccabang']).filter(status_id=status.status_pegawai.pk):
             if (p.ks_premi == 0 or p.ks_premi == "" or p.ks_premi is None):
