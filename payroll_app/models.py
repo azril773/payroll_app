@@ -38,6 +38,13 @@ class jbpjs_db(models.Model):
     edit_date = models.DateTimeField(auto_now=True, null=True, blank=True)
 
 
+class user_db(models.Model):
+    sub = models.CharField(max_length=200,null=False)
+    nama = models.CharField(max_length=200,null=False)
+    email = models.CharField(max_length=100,null=True)
+    is_admin = models.BooleanField(null=True)
+
+
 
 
 
@@ -142,7 +149,7 @@ class cabang_db(models.Model):
 
 
 class akses_cabang_db(models.Model):
-    user = models.ForeignKey(User,on_delete=models.PROTECT)
+    user = models.ForeignKey(user_db,on_delete=models.PROTECT)
     cabang = models.ForeignKey(cabang_db,on_delete=models.CASCADE)
     
     add_by = models.CharField(max_length=200,null=True)
@@ -157,7 +164,7 @@ class akses_cabang_db(models.Model):
 pilihan_akses = (("root", "root"),("admin", "admin"),("it", "it"),("user", "user"),("tamu", "tamu"),) 
 
 class akses_db(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(user_db, on_delete=models.CASCADE)
     akses = models.CharField(max_length=100, choices=pilihan_akses, default="user")
 
     def __int__(self):
@@ -165,7 +172,7 @@ class akses_db(models.Model):
 
 
 class akses_divisi_db(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(user_db, on_delete=models.CASCADE)
     divisi = models.ForeignKey(divisi_db, on_delete=models.CASCADE)
 
     def __int__(self):

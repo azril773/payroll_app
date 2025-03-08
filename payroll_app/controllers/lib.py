@@ -543,6 +543,32 @@ def setRedisTransaksi(cabang,idp):
     redisConn.expire(f"transaksi-{idp}",300)
 
 
+def authorization(roles):
+    def view(func):
+        def process(r,*args, **kwargs):
+            try:
+                user = r.session["user"]
+                print(user)
+                akses = akses_db.objects.filter(user_id=user["id"]).last()
+                print(akses)
+                if not akses:
+                    messages.error(r,"Akses anda belum ditentukan")
+                    return redirect("beranda")
+                
+                if not "*" in roles:
+                    if not akses.akses in roles:
+                        messages.error(r,"Anda tidak memiliki akses")
+                        return redirect("beranda")
+                    
+                res = func(r,*args, **kwargs)
+                return res
+            except Exception as e:
+                print(e)
+                messages.error(r,"Silahkan login terlebih dahulu")
+                return redirect("beranda")
+        return process
+    return view
+
 # def objpayroll(id,gaji,pot,pot_rp,pot_hr,bpjs,tk,ks,ntmk,insentif,tj,tt,ket,thp,gaji_cm,rek):
 #     obj = {
 #         "id": id,

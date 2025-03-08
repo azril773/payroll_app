@@ -1,49 +1,38 @@
 from ..lib import *
 # Create your views here.
-@login_required
+@authorization(["root","it"])
 def payroll(r,sid):
-    iduser = r.user.id
-    if akses_db.objects.filter(user_id=int(iduser)).exists():
-        akses = akses_db.objects.get(user_id=int(iduser))
-        if akses.akses == "root" or  akses.akses == "it":
-            last = summary_rekap_gaji_db.objects.using(r.session["ccabang"]).last()
-            if last is None:
-                messages.error(r,"Rekap Gaji terakhir tidak ada")
-                return redirect("beranda")
-            if last.tgl_bayar.month == 12:
-                bulan = 1
-            else:
-                bulan = last.tgl_bayar.month + 1
-            status_payroll = status_pegawai_payroll_db.objects.using(f"p{r.session['ccabang']}").all()
-
-            gaji = gaji_db.objects.using(r.session["ccabang"]).filter(status=1,status_pegawai_id=sid)
-            if len(gaji) <= 0:
-                modal = False
-            else:
-                modal = True
-
-            data = {
-                "status":status_payroll,
-                "staff":r.user.is_staff,
-                "sid":sid,
-                'modal':modal,
-                "gaji":gaji,
-                "periode":nama_bulan(bulan)
-            }
-            return render(r,"payroll/payroll.html",data)
-        else:
-            messages.error(r,"Anda tidak memiliki akses ke halaman tersebut")
-            return redirect("beranda")
-    else:
-        messages.error(r,"Data akses anda tidak ditemukan")
+    iduser = r.session["user"]["id"]
+    last = summary_rekap_gaji_db.objects.using(r.session["ccabang"]).last()
+    if last is None:
+        messages.error(r,"Rekap Gaji terakhir tidak ada")
         return redirect("beranda")
+    if last.tgl_bayar.month == 12:
+        bulan = 1
+    else:
+        bulan = last.tgl_bayar.month + 1
+    status_payroll = status_pegawai_payroll_db.objects.using(f"p{r.session['ccabang']}").all()
+    gaji = gaji_db.objects.using(r.session["ccabang"]).filter(status=1,status_pegawai_id=sid)
+    if len(gaji) <= 0:
+        modal = False
+    else:
+        modal = True
+    data = {
+        "status":status_payroll,
+        "staff":r.session["user"]["admin"],
+        "sid":sid,
+        'modal':modal,
+        "gaji":gaji,
+        "periode":nama_bulan(bulan)
+    }
+    return render(r,"payroll/payroll.html",data)
 
-@login_required
+@authorization(["root","it"])
 def payroll_json(r):
     status = r.POST.get("status")
 
     cabang = r.session["ccabang"]
-    username = r.user.username
+    username = r.session["user"]["nama"]
     today = date.today()
     hari_ini = today.day
     bulan_ini = today.month
@@ -582,7 +571,7 @@ def payroll_json(r):
     return JsonResponse({"status":"success","msg":"Berhasil mangambil data gaji","data":datag})
 
 
-@login_required
+@authorization(["root","it"])
 def edit_payroll(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -636,13 +625,13 @@ def edit_payroll(r):
     else:
         return JsonResponse({"status":"error","msg":"Not Found"},status=400)
 
-@login_required
+@authorization(["root","it"])
 def bcsv(r):
     statusid = r.POST.get("statusid")
 
 
     today = date.today()
-    username = r.user.username
+    username = r.session["user"]["nama"]
 
     bulan_ini = today.month
     tahun_ini = today.year
@@ -705,7 +694,7 @@ def bcsv(r):
 
 
 
-@login_required
+@authorization(["root","it"])
 def csvp(r):
     if r.method == "POST":
         sid = r.POST.get("sid")
@@ -781,7 +770,7 @@ def csvp(r):
         return render(r,"payroll/csvp/csvp.html",{"data":data,"sid":sid,"status":status})
             
 
-@login_required
+@authorization(["root","it"])
 def batalKonfirmasi(r):
     if r.method == "POST":
         status = r.POST.get("status")
@@ -795,12 +784,12 @@ def batalKonfirmasi(r):
             messages.error(r,"Terjadi kesalahan")
             return redirect("")
         
-@login_required
+@authorization(["root","it"])
 def konfirmasi(r):
     if r.method == "POST":
         status = r.POST.get("status")
         cabang = r.session["ccabang"]
-        username = r.user.username
+        username = r.session["user"]["nama"]
         print("OKOKOk")
         try:
             status = int(status)
@@ -899,7 +888,7 @@ def konfirmasi(r):
 
 
 
-@login_required
+@authorization(["root","it"])
 def printC(r):
     if r.method == "POST":
         sd = r.POST.get("sd")
@@ -996,7 +985,7 @@ def printC(r):
             messages.error(r,e)
             return redirect("payroll",sid=sid)
         
-@login_required
+@authorization(["root","it"])
 def printP(r):
     if r.method == "POST":
         sd = r.POST.get("sd")

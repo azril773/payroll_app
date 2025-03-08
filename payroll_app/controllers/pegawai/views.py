@@ -1,37 +1,28 @@
 from ..lib import *
 
-@login_required
+@authorization(["root","it"])
 def pegawai(r,sid):
-    iduser = r.user.id
-    akses = akses_db.objects.filter(user_id=iduser)
-    if akses.exists():
-        if akses[0].akses == "root" or akses[0].akses == 'it' or akses[0].akses == 'hrd':
+    iduser = r.session["user"]["id"]
+    statusall = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
+    status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').filter(status_pegawai_id=int(sid))
+    if not status.exists():
+        messages.error(r,"Status tidak terdaftar")
+        return redirect("beranda")
+    pegawai = pegawai_db.objects.using(r.session["ccabang"]).filter(status_id=status[0].status_pegawai.pk)
+    
+    divid = [p.divisi_id for p in pegawai_db.objects.using(r.session["ccabang"]).filter(status_id=status[0].status_pegawai.pk).distinct("divisi_id")]
+    divisi = divisi_db.objects.using(r.session["ccabang"]).filter(pk__in=divid)
+    data = {
+        'status':statusall,
+        "pegawai":pegawai,
+        "staff":r.session["user"]["admin"],
+        "divisi":divisi,
+        "sid":sid,
+        "status_pegawai":status[0].status_pegawai.status
+    }
+    return render(r,'pegawai/pegawai.html',data)
 
-            statusall = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
-            status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').filter(status_pegawai_id=int(sid))
-            if not status.exists():
-                messages.error(r,"Status tidak terdaftar")
-                return redirect("beranda")
-            pegawai = pegawai_db.objects.using(r.session["ccabang"]).filter(status_id=status[0].status_pegawai.pk)
-            
-            divid = [p.divisi_id for p in pegawai_db.objects.using(r.session["ccabang"]).filter(status_id=status[0].status_pegawai.pk).distinct("divisi_id")]
-            divisi = divisi_db.objects.using(r.session["ccabang"]).filter(pk__in=divid)
-            data = {
-                'status':statusall,
-                "pegawai":pegawai,
-                "staff":r.user.is_staff,
-                "divisi":divisi,
-                "sid":sid,
-                "status_pegawai":status[0].status_pegawai.status
-            }
-            return render(r,'pegawai/pegawai.html',data)
-        else:
-            return JsonResponse({"status":"error",'msg':"Anda tidak memiliki akses"},status=400)
-    else:
-        return JsonResponse({'status':"error","msg":"Akses anda belum ditentukan"},status=400)
-
-
-@login_required
+@authorization(["root","it"])
 def pegawai_json(r):
     print(r.headers)
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -74,7 +65,7 @@ def pegawai_json(r):
 
 
 
-@login_required
+@authorization(["root","it"])
 def edit_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         idp = r.POST.get("pegawai")
@@ -105,7 +96,7 @@ def edit_json(r):
 
         return JsonResponse({"status":"success","msg":"Berhasil edit data pegawai"})
 
-@login_required
+@authorization(["root","it"])
 def editD_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         divisi = r.POST.get("divisi")
@@ -140,7 +131,7 @@ def editD_json(r):
 
         return JsonResponse({"status":"success","msg":"Berhasil edit data pegawai"})
 
-@login_required
+@authorization(["root","it"])
 def editS_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         sid = r.POST.get("sid")
@@ -171,7 +162,7 @@ def editS_json(r):
         return JsonResponse({"status":"success","msg":"Berhasil edit data pegawai"})
     
 
-@login_required
+@authorization(["root","it"])
 def editeb_json(r):
     # Memastikan bahwa request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":

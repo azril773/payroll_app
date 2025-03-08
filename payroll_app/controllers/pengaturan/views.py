@@ -1,22 +1,15 @@
 from ..lib import *
 
-@login_required
+@authorization(["root","it"])
 def pot_absensi(r):
-    id_user = r.user.id
-    akses = akses_db.objects.filter(user_id=id_user).last()
-    if akses is not None:
-        if akses.akses == "root" or akses.akses == 'hrd':
-            status =status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
-            return render(r,'pengaturan/pot_absensi.html',{
-                "status":status,
-                "staff":r.user.is_staff,
-            })
-        else:
-            return redirect("login")
-    else:
-        return redirect("login")
+    id_user = r.session["user"]["id"]
+    status =status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
+    return render(r,'pengaturan/pot_absensi.html',{
+        "status":status,
+        "staff":r.session["user"]["admin"],
+    })
 
-@login_required
+@authorization(["root","it"])
 def pot_absensi_json(r):
     if r.headers["X-Requested-With"] == 'XMLHttpRequest':
         potongan = pot_absensi_db.objects.using(r.session["ccabang"]).all()
@@ -31,7 +24,7 @@ def pot_absensi_json(r):
 
         return JsonResponse({"status":"success","msg":"berhasil ambil data potongan","data":data},status=200)
     
-@login_required
+@authorization(["root","it"])
 def edit_pot_json(r):
     if r.headers["X-Requested-With"] == 'XMLHttpRequest':
         id = r.POST.get("id")
@@ -53,7 +46,7 @@ def edit_pot_json(r):
         except Exception as e:
             return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
         
-@login_required
+@authorization(["root","it"])
 def tambah_pot_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         pot = r.POST.get("pot")
@@ -72,22 +65,15 @@ def tambah_pot_json(r):
         
 
 
-@login_required
+@authorization(["root","it"])
 def rek_sumber_dana(r):
-    id_user = r.user.id
-    akses = akses_db.objects.filter(user_id=id_user).last()
-    if akses is not None:
-        if akses.akses == "root" or akses.akses == "hrd":
-            status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
-            return render(r,"pengaturan/rek_sumber_dana.html",{"status":status,"staff":r.user.is_staff})
-        else:
-            return JsonResponse({"status":'error',"msg":"Anda tidak memiliki akses"},status=400)
-    else:
-        return JsonResponse({"status":"error","msg":"Akses anda belum ditentukan"},status=400)
+    id_user = r.session["user"]["id"]
+    status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
+    return render(r,"pengaturan/rek_sumber_dana.html",{"status":status,"staff":r.session["user"]["admin"]})
 
 
 
-@login_required
+@authorization(["root","it"])
 def rek_sumber_dana_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         rekening = rekening_db.objects.using(r.session["ccabang"]).all()
@@ -107,7 +93,7 @@ def rek_sumber_dana_json(r):
 
         return JsonResponse({'status':'error',"msg":"berhasil ambil data rekening sumber dana","data":data})
     
-@login_required
+@authorization(["root","it"])
 def tambah_rek_sumber_dana_json(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -119,7 +105,7 @@ def tambah_rek_sumber_dana_json(r):
         bank = r.POST.get("bank")
         bpjs = r.POST.get("bpjs")
         email = r.POST.get("email")
-        username = r.user.username
+        username = r.session["user"]["nama"]
 
         # cek jika salah satunya tidak ada maka return error
         if nama is None or norek is None or atas_nama is None or bank is None or email is None:
@@ -180,7 +166,7 @@ def edit_rek_sumber_dana_json(r):
         bpjs = r.POST.get("bpjs")
         email = r.POST.get("email")
         id = r.POST.get("id")
-        username = r.user.username
+        username = r.session["user"]["nama"]
 
         # cek jika salah satunya tidak ada maka return error
         if nama is None or norek is None or atas_nama is None or bank is None or email is None or id is None:
@@ -229,13 +215,13 @@ def edit_rek_sumber_dana_json(r):
             return JsonResponse({"status":'error',"msg":"Terjadi kesalahan"},status=400)
         
 
-@login_required
+@authorization(["root","it"])
 def delete_rek_sumber_dana_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
 
         # Mengambil data dari body request
         id = r.POST.get("id")
-        username = r.user.username
+        username = r.session["user"]["nama"]
 
         try:
             # convert type id ke integer
@@ -249,20 +235,13 @@ def delete_rek_sumber_dana_json(r):
             return JsonResponse({"status":'error',"msg":"Terjadi kesalahan."},status=400)
 
 
-@login_required
+@authorization(["root","it"])
 def ttrans(r):
-    id_user = r.user.id
-    akses = akses_db.objects.filter(user_id=id_user).last()
-    if akses is not None:
-        if akses.akses == "root" or akses.akses == "hrd":
-            status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
-            return render(r,"pengaturan/ttrans.html",{"status":status,"staff":r.user.is_staff})
-        else:
-            return JsonResponse({"status":'error',"msg":"Anda tidak memiliki akses"},status=400)
-    else:
-        return JsonResponse({"status":"error","msg":"Akses anda belum ditentukan"},status=400)
+    id_user = r.session["user"]["id"]
+    status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
+    return render(r,"pengaturan/ttrans.html",{"status":status,"staff":r.session["user"]["admin"]})
 
-@login_required
+@authorization(["root","it"])
 def ttrans_json(r):
     if r.headers["X-Requested-With"] == 'XMLHttpRequest':
         ttrans = ttrans_db.objects.using(r.session["ccabang"]).all()
@@ -278,7 +257,7 @@ def ttrans_json(r):
 
         return JsonResponse({"status":"success","msg":"berhasil ambil data potongan","data":data},status=200)
     
-@login_required
+@authorization(["root","it"])
 def tambah_ttrans_json(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -286,7 +265,7 @@ def tambah_ttrans_json(r):
         # Mengambil data dari body request
         jenis = r.POST.get("jenis")
         tanggal = r.POST.get("tanggal")
-        username = r.user.username
+        username = r.session["user"]["nama"]
 
         # cek jika salah satunya tidak ada maka return error
         if jenis is None or tanggal is None:
@@ -310,7 +289,7 @@ def tambah_ttrans_json(r):
             print(e)
             return JsonResponse({"status":"error","msg":"Terjadi Kesalahan"},status=400)
 
-@login_required
+@authorization(["root","it"])
 def edit_ttrans_json(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -319,7 +298,7 @@ def edit_ttrans_json(r):
         id = r.POST.get("id")
         jenis = r.POST.get("jenis")
         tanggal = r.POST.get("tanggal")
-        username = r.user.username
+        username = r.session["user"]["nama"]
 
         # cek jika salah satunya tidak ada maka return error
         if jenis is None or tanggal is None or id is None:
@@ -342,7 +321,14 @@ def edit_ttrans_json(r):
             print(e)
             return JsonResponse({"status":"error","msg":"Terjadi Kesalahan"},status=400)
         
-@login_required
+
+
+@authorization(["root","it"])
+def akses(r):
+    pass
+
+
+@authorization(["root","it"])
 def delete_ttrans_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         id = r.POST.get("id")
@@ -354,3 +340,30 @@ def delete_ttrans_json(r):
         except Exception as e:
             return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
         
+
+@authorization(["root","it"])
+def akses(r):
+    id_user = r.session["user"]["id"]
+    status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
+    user = user_db.objects.all()
+    return render(r,"pengaturan/akses.html",{"status":status,"staff":r.session["user"]["admin"],"user":user})
+
+@authorization(["root","it"])
+def takses(r):
+    if r.method == "POST":
+        user = r.POST.get("user")
+        akses = r.POST.get("akses")
+
+        if user == "" or akses == "":
+            messages.error(r,"Harap lengkapi form yang ada")
+            return redirect("akses")
+
+        ak = akses_db.objects.filter(user_id=user).last()
+        if ak is not None:
+            ak.akses = akses
+            ak.save()
+        else:
+            akses_db(user_id=user,akses=akses).save()
+
+        messages.success(r,"Berhasil memberikan akses")
+        return redirect("akses")

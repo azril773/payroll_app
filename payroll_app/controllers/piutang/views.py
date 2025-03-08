@@ -49,29 +49,25 @@ def setRedisTransaksi(cabang,idp):
     redisConn.expire(f"transaksi-{idp}",300)
 
 
-@login_required
+@authorization(["root","it"])
 def piutang(r):
-    id_user = r.user.id
-    if akses_db.objects.filter(user_id=id_user).exists():
-        akses = akses_db.objects.get(user_id=id_user)
-        if akses.akses == "root" or akses.akses == "hrd":
-            pegawai = pegawai_db.objects.using(r.session["ccabang"]).filter(status_payroll=1)
-            jenis = jenis_piutang_db.objects.select_related("jenis_transaksi").using(r.session["ccabang"]).all()
-            jtransaksi = jenis_transaksi_db.objects.using(r.session["ccabang"]).filter(jenis_transaksi__iregex=r'pembayaran|pemutihan')
-            count = temporary_piutang_db.objects.using(r.session["ccabang"]).all().aggregate(count=Count("id"))
-            status_payroll = status_pegawai_payroll_db.objects.using(f"p{r.session['ccabang']}").all()
-            data = {
-                'pegawai':pegawai,
-                'jenis':jenis,
-                'countTemp':count["count"],
-                'jenis_transaksi':jtransaksi,
-                'status':status_payroll,
-                "staff":r.user.is_staff,
-            }
-            return render(r,"piutang/piutang.html",data)
-        
+    pegawai = pegawai_db.objects.using(r.session["ccabang"]).filter(status_payroll=1)
+    jenis = jenis_piutang_db.objects.select_related("jenis_transaksi").using(r.session["ccabang"]).all()
+    jtransaksi = jenis_transaksi_db.objects.using(r.session["ccabang"]).filter(jenis_transaksi__iregex=r'pembayaran|pemutihan')
+    count = temporary_piutang_db.objects.using(r.session["ccabang"]).all().aggregate(count=Count("id"))
+    status_payroll = status_pegawai_payroll_db.objects.using(f"p{r.session['ccabang']}").all()
+    data = {
+        'pegawai':pegawai,
+        'jenis':jenis,
+        'countTemp':count["count"],
+        'jenis_transaksi':jtransaksi,
+        'status':status_payroll,
+        "staff":r.session["user"]["admin"],
+    }
+    return render(r,"piutang/piutang.html",data)
 
-@login_required
+
+@authorization(["root","it"])
 def piutang_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         piutang = piutang_db.objects.select_related("pegawai").using(r.session["ccabang"]).all()
@@ -98,7 +94,7 @@ def piutang_json(r):
         return JsonResponse({'status':"success","msg":"Berhasil ambil data piutang","data":result},status=200)
     else:
         return JsonResponse({"status":"error","msg":"Not Found"},status=404)
-@login_required
+@authorization(["root","it"])
 def tpiutang_json(r):
     if r.headers["X-Requested-With"] == 'XMLHttpRequest':
         
@@ -108,7 +104,7 @@ def tpiutang_json(r):
         jenis = r.POST.get("jenis")
         nilai = r.POST.get("nilai")
         potongan = r.POST.get("potongan")
-        username = r.user.username
+        username = r.session["user"]["nama"]
 
 
         # Jika form kosong
@@ -166,11 +162,11 @@ def tpiutang_json(r):
                     transaction.set_rollback(True,using=r.session["ccabang"])
                     return JsonResponse({"status":"error","msg":"Terjadi kesalahn"},status=400)
         
-@login_required
+@authorization(["root","it"])
 def tbh_piutang_json(r):
     # Pastikan request dari Ajax
     if r.headers["X-Requested-With"] == 'XMLHttpRequest':
-        username = r.user.username
+        username = r.session["user"]["nama"]
         # Ambil semua id yang dikirim
         ids = r.POST.getlist("id[]")
         print(ids)
@@ -241,7 +237,7 @@ def tbh_piutang_json(r):
         return JsonResponse({"status":"error","msg":"Not Found"},status=404)
 
 
-@login_required
+@authorization(["root","it"])
 def post_piutang_json(r):
     # Pastikan request dari Ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -262,7 +258,7 @@ def post_piutang_json(r):
         return JsonResponse({"status":"error","msg":"Not Found"},status=404)
     
 
-@login_required
+@authorization(["root","it"])
 def edit_piutang_json(r):
 
     # Memastikan bahwa request dari ajax
@@ -340,7 +336,7 @@ def edit_piutang_json(r):
             return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
 
 
-@login_required
+@authorization(["root","it"])
 def delete_piutang_json(r):
 
     # Memastikan bahwa request dari ajax
@@ -359,7 +355,7 @@ def delete_piutang_json(r):
             except Exception as e:
                 return JsonResponse({'status':'error',"msg":"Terjadi kesalahan"},status=400)
             
-@login_required
+@authorization(["root","it"])
 def edit_potongan_json(r):
     # Memastikan bahwa request dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -402,7 +398,7 @@ def edit_potongan_json(r):
             return JsonResponse({"status":'error',"msg":"Tejadi Kesalahan"},status=400)
         
 
-@login_required
+@authorization(["root","it"])
 def detail_piutang_json(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == 'XMLHttpRequest':
@@ -426,7 +422,7 @@ def detail_piutang_json(r):
             return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
         
 
-@login_required
+@authorization(["root","it"])
 def edit_detail_json(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -478,7 +474,7 @@ def edit_detail_json(r):
         
 
 
-@login_required
+@authorization(["root","it"])
 def pelunasan_json(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
@@ -557,7 +553,7 @@ def pelunasan_json(r):
             return JsonResponse({"status":"error","msg":"Terjadi Kesalahan"},status=400)
         
 
-@login_required
+@authorization(["root","it"])
 def tketemu_keliru(r):
     # Memastikan request hanya dari ajax
     if r.headers["X-Requested-With"] == "XMLHttpRequest":

@@ -18,4 +18,7 @@ urlpatterns = [
     path('edit_ttrans_json', views.edit_ttrans_json,name="edit_ttrans_json"),
     path('delete_ttrans_json', views.delete_ttrans_json,name="delete_ttrans_json"),
 
+
+    path('takses', views.takses,name="takses"),
+
 ]

@@ -7,31 +7,13 @@ from .pegawai.views import *
 from .piutang.views import *
 from .api.ijin import *
 from .pengaturan.views import *
-# @login_required
+# @authorization(["root","it"])
 # def status_pegawai_json(r):
     
 
-@login_required
-def beranda(r):
-    # jangan lupa pake using
-    id_user = r.user.id
-    akses = akses_db.objects.filter(user_id=id_user).last()
-    if akses is not None:
-        if akses.akses == "root" or akses.akses == "hrd":
-            status_payroll = status_pegawai_payroll_db.objects.using(f"p{r.session['ccabang']}").all()
-            data = {
-                "staff":r.user.is_staff,
-                "status":status_payroll
-            }
-            return render(r,'beranda/beranda.html',data)
-        else:
-            messages.error(r,"Anda tidak memiliki akses")
-            return redirect("login")
-    else:
-        messages.error(r,"Akses anda belum ditentukan")
-        return redirect("login")
 
-@login_required
+
+@authorization(["root","it"])
 def setup(r):
     status_payroll = status_pegawai_payroll_db.objects.using(f"p{r.session['ccabang']}").all()
     periode = pperiode(r.session["ccabang"])[0]
@@ -40,14 +22,14 @@ def setup(r):
         rekening = rekening_db.objects.using(r.session["ccabang"]).get(bpjs=0)
     except:
         if r.user.is_staff:
-            return redirect("pengaturan")
+            return redirect("rek_sumber_dana")
         messages.error(r,"Rekening non bpjs tidak ada")
         return redirect("login")
     try:
         rek_bpjs = rekening_db.objects.using(r.session["ccabang"]).get(bpjs=1)
     except:
         if r.user.is_staff:
-            return redirect("pengaturan")
+            return redirect("rek_sumber_dana")
         messages.error(r,"Rekening bpjs tidak ada")
         return redirect("login")
     # print(status_payroll
@@ -118,9 +100,11 @@ def setup(r):
     return redirect("beranda")
 
 
-@login_required
-def keluar(r):
-    logout(r)
-    return redirect('login')
 
-
+def user_logout(r):
+    r.session["ccabang"] = None
+    r.session["cabang"] = None
+    r.session["user"] = None
+    result = os.environ.get("INVALIDATION_URL")
+    messages.info(r,"Berhasil logout")
+    return redirect(result)

@@ -42,6 +42,11 @@
 <section id="content" class="container mt-5">
    {% comment %} <h1>Beranda</h1> {% endcomment %}
    <h4>Selamat Datang diaplikasi <b>payroll v2.0</b></h4>
+   {% if auth %}
+        <a href="{{dashboard}}" class="btn btn-primary">Dashboard</a>
+   {% else %}
+        <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+   {% endif %}
 </section>
 
 {% endblock content %}

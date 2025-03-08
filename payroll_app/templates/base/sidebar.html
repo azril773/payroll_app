@@ -101,18 +101,24 @@
     </li>
     <li class="nav-item">
         <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#dropdownpengaturan"
-            aria-expanded="true" aria-controls="dropdownpengaturan">
-            <i class="fas fa-fw fa-folder"></i>
-            <span>Pengaturan</span>
-        </a>
-        <div id="dropdownpengaturan" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
-            <div class="bg-white py-2 collapse-inner rounded">
-                <h6 class="collapse-header">Pengaturan:</h6>
-                <a class="collapse-item" href="{% url 'pot_absensi' %}">Potongan Absensi</a>
-                <a class="collapse-item" href="{% url 'rek_sumber_dana' %}">Rekening Sumber Dana</a>
-                <a class="collapse-item" href="{% url 'ttrans' %}">Tanggal Transfer</a>
-            </div>
+        aria-expanded="true" aria-controls="dropdownpengaturan">
+        <i class="fas fa-fw fa-folder"></i>
+        <span>Pengaturan</span>
+    </a>
+    <div id="dropdownpengaturan" class="collapse" aria-labelledby="headingPages" data-parent="#accordionSidebar">
+        <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">Pengaturan:</h6>
+            <a class="collapse-item" href="{% url 'pot_absensi' %}">Potongan Absensi</a>
+            <a class="collapse-item" href="{% url 'rek_sumber_dana' %}">Rekening Sumber Dana</a>
+            <a class="collapse-item" href="{% url 'ttrans' %}">Tanggal Transfer</a>
+            <a class="collapse-item" href="{% url 'akses' %}">Akses</a>
         </div>
+    </div>
+</li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url "logout" %}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Logout</span></a>
     </li>
         
         {% comment %} <!-- Nav Item - Charts -->
