@@ -160,6 +160,9 @@ def tpiutang_json(r):
                 except Exception as e:
                     print(e)
                     transaction.set_rollback(True,using=r.session["ccabang"])
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type, fname, exc_tb.tb_lineno)
                     return JsonResponse({"status":"error","msg":"Terjadi kesalahn"},status=400)
         
 @authorization(["root","it"])
@@ -229,6 +232,9 @@ def tbh_piutang_json(r):
                 except Exception as e:
                     print(e)
                     transaction.set_rollback(True,using=r.session["ccabang"])
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type, fname, exc_tb.tb_lineno)
                     return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
                 
         count = temporary_piutang_db.objects.using(r.session["ccabang"]).all().aggregate(count=Count("id"))
@@ -330,9 +336,15 @@ def edit_piutang_json(r):
                     return JsonResponse({"status":"success","msg":"Berhasil edit temporary"},status=200)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session["ccabang"])
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type, fname, exc_tb.tb_lineno)
                     return JsonResponse({"status":"error",'msg':"Terjadi kesalahan"},status=400)
 
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
 
 
@@ -353,6 +365,9 @@ def delete_piutang_json(r):
                 count = temporary_piutang_db.objects.using(r.session["ccabang"]).all().aggregate(count=Count("id"))
                 return JsonResponse({"status":'success',"msg":"Berhasil hapus datas","count":count},status=200)
             except Exception as e:
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
                 return JsonResponse({'status':'error',"msg":"Terjadi kesalahan"},status=400)
             
 @authorization(["root","it"])
@@ -364,38 +379,35 @@ def edit_potongan_json(r):
 
         if id is None or pot is None:
             return JsonResponse({'status':"error","msg":"Lengkapi form yang ada"},status=400)
-        try:
-            # Convert id dan potongan ke integer
-            id = int(id)
-            pot = int(pot)
+        with transaction.atomic(using=r.session["ccabang"]):
+            try:
+                # Convert id dan potongan ke integer
+                id = int(id)
+                pot = int(pot)
 
-            # Memulai transaksi database
-            with transaction.atomic(using=r.session["ccabang"]):
-                try:
-                    # Ambil data piutang sesuai denagn id
-                    piutang = piutang_db.objects.select_for_update().using(r.session["ccabang"]).filter(pk=int(id)).last()
-                    
-                    # Cek jika potongan melebihi piutang return error
-                    if pot > int(piutang.piutang):
-                        return JsonResponse({"status":"error","msg":"Potongan lebih besar dari piutang"},status=400)
-
-                    # Cek apakah data piutang ada, jika tidak maka kembalikan error
-                    if piutang is None:
-                        return JsonResponse({"status":"error","msg":"Data tidak ada"},status=400)
-                    
-                    # Update data
-                    piutang.pot_piutang = pot
-                    piutang.save(using=r.session["ccabang"])
-
-                    # Updata data di redis
-                    setRedisTemp(r.session["ccabang"])
-                    return JsonResponse({"status":"success","msg":"Berhasil edit potongan piutang"},status=200)
-                except Exception as e:
-                    transaction.set_rollback(True,using=r.session["ccabang"])
-                    return JsonResponse({"status":'error',"msg":"Tejadi Kesalahan"},status=400)
-        except Exception as e:
-            print(e)
-            return JsonResponse({"status":'error',"msg":"Tejadi Kesalahan"},status=400)
+                # Memulai transaksi database
+                # Ambil data piutang sesuai denagn id
+                piutang = piutang_db.objects.select_for_update().using(r.session["ccabang"]).filter(pk=int(id)).last()
+                
+                # Cek jika potongan melebihi piutang return error
+                if pot > int(piutang.piutang):
+                    return JsonResponse({"status":"error","msg":"Potongan lebih besar dari piutang"},status=400)
+                # Cek apakah data piutang ada, jika tidak maka kembalikan error
+                if piutang is None:
+                    return JsonResponse({"status":"error","msg":"Data tidak ada"},status=400)
+                
+                # Update data
+                piutang.pot_piutang = pot
+                piutang.save(using=r.session["ccabang"])
+                # Updata data di redis
+                setRedisTemp(r.session["ccabang"])
+                return JsonResponse({"status":"success","msg":"Berhasil edit potongan piutang"},status=200)
+            except Exception as e:
+                print(e)
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
+                return JsonResponse({"status":'error',"msg":"Tejadi Kesalahan"},status=400)
         
 
 @authorization(["root","it"])
@@ -418,7 +430,9 @@ def detail_piutang_json(r):
             data = json.loads(result)
             return JsonResponse({"status":'success',"msg":"Berhasil ambil data transaksi","data":data},status=200)
         except Exception as e:
-            print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
         
 
@@ -468,8 +482,14 @@ def edit_detail_json(r):
                     return JsonResponse({"status":'success',"msg":"Berhasil edit data"},status=200)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session["ccabang"])
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type, fname, exc_tb.tb_lineno)
                     return JsonResponse({"status":'error',"msg":"Terjadi kesalahan"},status=400)
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
         
 
@@ -548,8 +568,14 @@ def pelunasan_json(r):
                     return JsonResponse({"status":"success","msg":"Berhasil melakukan pelunasan"},status=200)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session["ccabang"])
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type, fname, exc_tb.tb_lineno)
                     return JsonResponse({"status":'error',"msg":"Terjadi kesalahan"},status=400)
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             return JsonResponse({"status":"error","msg":"Terjadi Kesalahan"},status=400)
         
 
@@ -631,7 +657,13 @@ def tketemu_keliru(r):
                 except Exception as e:
                     print(e)
                     transaction.set_rollback(True,using=r.session['ccabang'])
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                    print(exc_type, fname, exc_tb.tb_lineno)
                     return JsonResponse({'status':"error","msg":"Terjadi kesalahan"},status=400)
         except Exception as e:
             print(e)
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             return JsonResponse({'status':"error","msg":"Terjadi kesalahan"},status=400)

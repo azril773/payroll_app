@@ -51,9 +51,6 @@
           <th class="text-dark">Nik</th>
           <th class="text-dark">Bagian</th>
           <th class="text-dark">Gapok</th>
-          <th class="text-dark">Tunj Jabatan</th>
-          <th class="text-dark">Tunj Tetap</th>
-          <th class="text-dark">Insentif</th>
           <th class="text-dark">Gaji</th>
           <th class="text-dark">Gaji CM</th>
           <th class="text-dark">Pot Absensi</th>
@@ -236,12 +233,6 @@
       { data: "bagian" },
       {
         data: "gaji",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${formatHarga(data)}</p>`;
-        },
-      },
-      {
-        data: "insentif",
         render: (data, type, row, meta) => {
           return `<p class="text-nowrap">${formatHarga(data)}</p>`;
         },

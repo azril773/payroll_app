@@ -84,6 +84,9 @@ def edit_json(r):
             except Exception as e:
                 print(e)
                 transaction.set_rollback(True,using=r.session["ccabang"])
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
                 return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=500)
 
         return JsonResponse({"status":"success","msg":"Berhasil edit data pegawai"})
@@ -115,6 +118,9 @@ def editD_json(r):
             except Exception as e:
                 print(e)
                 transaction.set_rollback(True,using=r.session["ccabang"])
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
                 return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=500)
 
         return JsonResponse({"status":"success","msg":"Berhasil edit data pegawai"})
@@ -141,6 +147,9 @@ def editS_json(r):
             except Exception as e:
                 print(e)
                 transaction.set_rollback(True,using=r.session["ccabang"])
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
                 return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=500)
 
         return JsonResponse({"status":"success","msg":"Berhasil edit data pegawai"})
