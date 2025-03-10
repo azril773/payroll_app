@@ -64,13 +64,13 @@ def callback(r):
         user.is_admin = is_admin[0]
         user.save()
     
-    if is_admin[0]:
-        akses = akses_db.objects.filter(user_id=user.pk).last()
-        if not akses:
-            akses_db(user_id=user.pk,akses='root').save()
-        else:
-            akses.akses = "root"
-            akses.save()
+    # if is_admin[0]:
+    #     akses = akses_db.objects.filter(user_id=user.pk).last()
+    #     if not akses:
+    #         akses_db(user_id=user.pk,akses='root').save()
+    #     else:
+    #         akses.akses = "root"
+    #         akses.save()
 
     cbgs = cabang_db.objects.filter(cabang__in=getCabang)
     for c in cbgs:

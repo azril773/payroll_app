@@ -53,7 +53,6 @@
           <th class="text-dark">Gapok</th>
           <th class="text-dark">Tunj Jabatan</th>
           <th class="text-dark">Tunj Tetap</th>
-          <th class="text-dark">Tunj M.Kerja</th>
           <th class="text-dark">Insentif</th>
           <th class="text-dark">Gaji</th>
           <th class="text-dark">Gaji CM</th>
@@ -242,24 +241,6 @@
         },
       },
       {
-        data: "tunjangan_jabatan",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${formatHarga(data)}</p>`;
-        },
-      },
-      {
-        data: "tunjangan_tetap",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${formatHarga(data)}</p>`;
-        },
-      },
-      {
-        data: "tunjangan_masakerja",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${formatHarga(data)}</p>`;
-        },
-      },
-      {
         data: "insentif",
         render: (data, type, row, meta) => {
           return `<p class="text-nowrap">${formatHarga(data)}</p>`;
@@ -310,8 +291,6 @@
       $("td", row).eq(9).addClass("text-dark");
       $("td", row).eq(10).addClass("text-dark");
       $("td", row).eq(11).addClass("text-dark");
-      $("td", row).eq(12).addClass("text-dark");
-      $("td", row).eq(13).addClass("text-dark");
     },
     destroy: true,
     ordering: false,

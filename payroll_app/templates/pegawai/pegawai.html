@@ -39,13 +39,9 @@
         <th class="text-dark">Nik</th>
         <th class="text-dark">Divisi</th>
         <th class="text-dark text-wrap">Tgl Masuk</th>
-        <th class="text-dark">Masa Kerja (Tahun)</th>
         <th class="text-dark">Rek. Dana</th>
         <th class="text-dark">Rek. Pegawai</th>
         <th class="text-dark">Gapok</th>
-        <th class="text-dark">Tunjangan Masa Kerja</th>
-        <th class="text-dark">Tunjangan Jabatan</th>
-        <th class="text-dark">Tunjangan Tetap</th>
         <th class="text-dark">Bpjs_tk</th>
         <th class="text-dark">Bpjs_ks</th>
         <th class="text-dark">Transfer / Cash</th>
@@ -94,14 +90,6 @@
                 <option value="{{p.pk}}">{{p.nama}}</option>
                 {% endfor %}
               </select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tt" class="form-label">Tunjangan Tetap</label>
-              <input type="text" class="form-control" name="tt" id="tt" />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tj" class="form-label">Tunjangan Jabatan</label>
-              <input type="text" class="form-control" name="tj" id="tj" />
             </div>
             <div class="col-md-6 mb-3">
               <label for="gaji" class="form-label">Gaji</label>
@@ -178,14 +166,6 @@
                 <option value="{{p.pk}}">{{p.nama}}</option>
                 {% endfor %}
               </select>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tteb" class="form-label">Tunjangan Tetap</label>
-              <input type="text" class="form-control" name="tteb" id="tteb" />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tjeb" class="form-label">Tunjangan Jabatan</label>
-              <input type="text" class="form-control" name="tjeb" id="tjeb" />
             </div>
             <div class="col-md-6 mb-3">
               <label for="gajieb" class="form-label">Gaji</label>
@@ -268,14 +248,6 @@
               </select>
             </div>
             <div class="col-md-6 mb-3">
-              <label for="ttD" class="form-label">Tunjangan Tetap</label>
-              <input type="text" class="form-control" name="ttD" id="ttD" />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tjD" class="form-label">Tunjangan Jabatan</label>
-              <input type="text" class="form-control" name="tjD" id="tjD" />
-            </div>
-            <div class="col-md-6 mb-3">
               <label for="gajiD" class="form-label">Gaji</label>
               <input type="text" class="form-control" name="gajiD" id="gajiD" />
             </div>
@@ -347,14 +319,6 @@
               <label for="gajiS" class="form-label">Gaji</label>
               <input type="text" class="form-control" name="gajiS" id="gajiS" />
             </div>
-            <div class="col-md-6 mb-3">
-              <label for="ttS" class="form-label">Tunjangan Tetap</label>
-              <input type="text" class="form-control" name="ttS" id="ttS" />
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="tjS" class="form-label">Tunjangan Jabatan</label>
-              <input type="text" class="form-control" name="tjS" id="tjS" />
-            </div>
             <div class="col-md-12 mb-3">
               <label for="tcS" class="form-label">Transfer / Cash</label>
               <select name="tcS" id="tcS">
@@ -424,36 +388,6 @@
     $("#gajieb").val(format($("#gajieb").val()));
   });
 
-  $("#tj").on("keyup", (e) => {
-    $("#tj").val(format($("#tj").val()));
-  });
-  $("#tt").on("keyup", (e) => {
-    $("#tt").val(format($("#tt").val()));
-  });
-
-  $("#tjD").on("keyup", (e) => {
-    $("#tjD").val(format($("#tjD").val()));
-  });
-
-  $("#tjeb").on("keyup", (e) => {
-    $("#tjeb").val(format($("#tjeb").val()));
-  });
-
-  $("#ttD").on("keyup", (e) => {
-    $("#ttD").val(format($("#ttD").val()));
-  });
-
-  $("#tjS").on("keyup", (e) => {
-    $("#tjS").val(format($("#tjS").val()));
-  });
-
-  $("#ttS").on("keyup", (e) => {
-    $("#ttS").val(format($("#ttS").val()));
-  });
-
-  $("#tteb").on("keyup", (e) => {
-    $("#tteb").val(format($("#tteb").val()));
-  });
 
   // TABLE +++
   const sid = $("#sid").val();
@@ -504,12 +438,6 @@
         },
       },
       {
-        data: "masa_kerja",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${data}</p>`;
-        },
-      },
-      {
         data: "rek_dana",
         render: (data, type, row, meta) => {
           return `<p class="text-nowrap">${data}</p>`;
@@ -523,24 +451,6 @@
       },
       {
         data: "gaji",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${format(data)}</p>`;
-        },
-      },
-      {
-        data: "t_masakerja",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${format(data)}</p>`;
-        },
-      },
-      {
-        data: "tj",
-        render: (data, type, row, meta) => {
-          return `<p class="text-nowrap">${format(data)}</p>`;
-        },
-      },
-      {
-        data: "tt",
         render: (data, type, row, meta) => {
           return `<p class="text-nowrap">${format(data)}</p>`;
         },
@@ -583,7 +493,6 @@
       $("td", row).eq(9).addClass("text-dark");
       $("td", row).eq(10).addClass("text-dark");
       $("td", row).eq(11).addClass("text-dark");
-      $("td", row).eq(12).addClass("text-dark");
     },
     scrollY: 300,
     paging: false,
@@ -602,23 +511,13 @@
           .val()
           .replace(/[^,\d]/gi, "")
       : undefined;
-    const tt = $("#tt").val()
-      ? $("#tt")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
-    const tj = $("#tj").val()
-      ? $("#tj")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
     const tc = $("#tc").val() ? $("#tc").val() : undefined;
     const status = $("#sp").val() ? $("#sp").val() : undefined;
 
     $.ajax({
       url: "{% url 'edit_json' %}",
       method: "post",
-      data: { pegawai, gaji, status, tt, tj, tc },
+      data: { pegawai, gaji, status, tc },
       headers: {
         "X-CSRFToken": token,
       },
@@ -627,8 +526,6 @@
         table.ajax.reload();
         pegawaiSelectize[0].selectize.clear();
         $("#gaji").val("");
-        $("#tj").val("");
-        $("#tt").val("");
         statusSelectize[0].selectize.clear();
         tcSelectize[0].selectize.clear();
         $("#editPegawai").modal("hide");
@@ -655,16 +552,6 @@
     const pegawai =
       $("#pegawaieb").val().length > 0 ? $("#pegawaieb").val() : undefined;
     console.log(pegawai);
-    const tt = $("#tteb").val()
-      ? $("#tteb")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
-    const tj = $("#tjeb").val()
-      ? $("#tjeb")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
     const gaji = $("#gajieb").val()
       ? $("#gajieb")
           .val()
@@ -676,7 +563,7 @@
     $.ajax({
       url: '{% url "editeb_json" %}',
       method: "POST",
-      data: { pegawai, tt, tj, gaji, tc, sp },
+      data: { pegawai, gaji, tc, sp },
       headers: { "X-CSRFToken": token },
       success: (e) => {
         $("#msgEb p").remove();
@@ -712,22 +599,12 @@
           .val()
           .replace(/[^,\d]/gi, "")
       : undefined;
-    const tt = $("#ttD").val()
-      ? $("#ttD")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
-    const tj = $("#tjD").val()
-      ? $("#tjD")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
     const tc = $("#tcD").val() ? $("#tcD").val() : undefined;
     const status = $("#spD").val() ? $("#spD").val() : undefined;
     $.ajax({
       url: "{% url 'editD_json' %}",
       method: "post",
-      data: { divisi, gaji, status, tt, tj, tc, sid },
+      data: { divisi, gaji, status, tc, sid },
       headers: {
         "X-CSRFToken": token,
       },
@@ -736,8 +613,6 @@
         table.ajax.reload();
         divisiSelectize[0].selectize.clear();
         $("#gajiD").val("");
-        $("#ttD").val("");
-        $("#tjD").val("");
         statusDSelectize[0].selectize.clear();
         tcDSelectize[0].selectize.clear();
         $("#editDPegawai").modal("hide");
@@ -767,22 +642,12 @@
           .val()
           .replace(/[^,\d]/gi, "")
       : undefined;
-    const tt = $("#ttS").val()
-      ? $("#ttS")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
-    const tj = $("#tjS").val()
-      ? $("#tjS")
-          .val()
-          .replace(/[^,\d]/gi, "")
-      : undefined;
     const tc = $("#tcS").val() ? $("#tcS").val() : undefined;
     const status = $("#spS").val() ? $("#spS").val() : undefined;
     $.ajax({
       url: "{% url 'editS_json' %}",
       method: "post",
-      data: { sid, gaji, status, tt, tj, tc },
+      data: { sid, gaji, status, tc },
       headers: {
         "X-CSRFToken": token,
       },
@@ -790,8 +655,6 @@
         $("#msgS p").remove();
         table.ajax.reload();
         $("#gajiS").val("");
-        $("#ttS").val("");
-        $("#tjS").val("");
         statusSSelectize[0].selectize.clear();
         tcSSelectize[0].selectize.clear();
         $("#editSPegawai").modal("hide");
@@ -816,14 +679,10 @@
 
   $("#editPegawai").on("show.bs.modal", function (e) {
     const pegawai = $(e.relatedTarget).data("pegawai");
-    const tt = $(e.relatedTarget).data("tt");
-    const tj = $(e.relatedTarget).data("tj");
     const tc = $(e.relatedTarget).data("tc");
     const gaji = $(e.relatedTarget).data("gaji");
     const status_payroll = $(e.relatedTarget).data("status_payroll");
 
-    $("#tt").val(format(tt));
-    $("#tj").val(format(tj));
     $("#gaji").val(format(gaji));
     pegawaiSelectize[0].selectize.setValue(pegawai);
     pegawaiSelectize[0].selectize.disable();

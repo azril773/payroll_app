@@ -16,7 +16,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 import pandas as pd
 import os
-redisConn = redis.Redis(host="localhost",port="6370",username='azril',password=132,decode_responses=True)
+redisConn = redis.Redis(host="localhost",port="6379",username='azril',password=123,decode_responses=True)
 
 # fungsi masa kerja
 def fmkerja_k(masa):    

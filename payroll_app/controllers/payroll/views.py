@@ -117,25 +117,12 @@ def payroll_json(r):
             "sdp":k.sdp,
             "ijin":k.ijin,
             "af":k.af,
-            "insentif":k.insentif,
             "ket":k.ket
         }
         dijin.append(data_k)
         
     datarg = []
     for p in pegawai_db.objects.using(r.session["ccabang"]).filter(status_id=int(status),status_payroll=1,payroll_by__iregex=r'hrd'):
-        if p.masa_kerja is not None:
-            if p.masa_kerja > 0:
-                # sesuaikan dengan cabang lain
-                # if re.match("/(?i)satpam/",p.divisi.divisi):
-                #     ntmk = fmkerja_s(p.masa_kerja)
-                # else:
-                ntmk = fmkerja_k(p.masa_kerja)
-            
-            else:
-                ntmk = 0
-        else:
-            ntmk = 0
         # define piutang
         # define total hari kerja
         # jan lupa untuk kasih using sesuai dengan cabang ahrisnya    
@@ -154,8 +141,6 @@ def payroll_json(r):
         if p.gaji is None:
             return JsonResponse({"status":"error","msg":"Gaji Pegawai tidak ada"},status=400)
         
-        if p.t_tetap is None:
-            return JsonResponse({'status':"error","msg":"Tunjangan tetap tidak ada"},status=400)
         if cm == 0:
             if cm_ke < 3:
                 gaji_cm = int(p.gaji) + int(p.t_tetap)
@@ -165,9 +150,6 @@ def payroll_json(r):
             gaji_cm = 0
         # perhitungan pembagian gaji
         gaji_p = round((p.gaji / pembagi) * thk, -2)
-        tt_p = round((p.t_tetap / pembagi) * thk, -2)
-        tj_p = round((p.t_jabatan / pembagi) * thk, -2)
-        mk_p = round((ntmk / pembagi) * thk, -2)
         ijin = [i for i in dijin if int(i["idp"]) == int(p.pk)]
         nbtk = p.tk_premi
         nbks = p.ks_premi
@@ -204,11 +186,7 @@ def payroll_json(r):
             "pot_piutang":0,
             "tk": p.tk_premi,
             "ks": p.ks_premi,
-            "ntmk": 0,
             "gaji_cm":0,
-            "insentif": 0,
-            "tj": 0,
-            "tt": 0,
             "ket": ket,
             "dthp": 0,
             "rek": p.rek_sd_id,
@@ -242,26 +220,17 @@ def payroll_json(r):
                 
                 
                 ptg = pth * potongan.potongan
-                if lijin["insentif"] is None:
-                    insentif = 0
-                else:
-                    insentif = lijin["insentif"]
-                
                 ket = lijin["ket"]
                 
                 if p.t_c == "None" or p.t_c is None:
                     pass
                 elif p.t_c == 'Transer_proporsional' or p.t_c == 'Cash_proporsional':
                     # ditambah potongan piutang
-                    thp = (gaji_p + tt_p + tj_p + mk_p + insentif + gaji_cm) - (bpjs + ptg + pot_piutang)
+                    thp = (gaji_p + gaji_cm) - (bpjs + ptg + pot_piutang)
                     rg.gaji = gaji_p
                     rg.thp = thp
                     rg.pot_rupiah  = ptg
                     rg.pot_hari = pth
-                    rg.t_masakerja = mk_p
-                    rg.insentif = insentif
-                    rg.t_jabatan = tj_p
-                    rg.t_tetap = tt_p
                     rg.pot_piutang = pot_piutang
                     # rg = ket
                     rg.rek_sd_id = p.rek_sd.pk
@@ -276,17 +245,13 @@ def payroll_json(r):
                 else:
                     if cm == 0:
 
-                        thp = (p.gaji + p.t_tetap + p.t_jabatan + ntmk + insentif) - (bpjs + ptg + pot_piutang)
+                        thp = (p.gaji) - (bpjs + ptg + pot_piutang)
                         print(thp)
                         rg.gaji = p.gaji
                         rg.thp = thp
                         rg.pot_rupiah  = ptg
                         rg.pot_hari = pth
                         rg.pot_piutang = pot_piutang
-                        rg.t_masakerja = ntmk
-                        rg.insentif = insentif
-                        rg.t_jabatan = p.t_jabatan
-                        rg.t_tetap = p.t_tetap
                         # rg = ket
                         rg.rek_sd_id = p.rek_sd.pk
                         rg.tgl_bayar = tgl_transfer
@@ -303,10 +268,6 @@ def payroll_json(r):
                         rg.pot_rupiah  = 0
                         rg.pot_hari = 0
                         rg.pot_piutang = pot_piutang
-                        rg.t_masakerja = 0
-                        rg.insentif = 0
-                        rg.t_jabatan = 0
-                        rg.t_tetap = 0
                         # rg = ket
                         rg.rek_sd_id = p.rek_sd.pk
                         rg.tgl_bayar = tgl_transfer
@@ -327,10 +288,6 @@ def payroll_json(r):
                     
                     pth = lijin["sb"] + lijin["af"] + lijin["sdl"] + lijin["ijin"] + int(sdp)
                     ptg = pth * potongan.potongan
-                    if lijin["insentif"] is None:
-                        insentif = 0
-                    else:
-                        insentif = lijin["insentif"]
                     
                     ket = lijin["ket"]
 
@@ -338,14 +295,10 @@ def payroll_json(r):
                         pass
                     elif p.t_c == 'Transer_proporsional' or p.t_c == 'Cash_proporsional':
                         # ditambah potongan piutang
-                        thp = (gaji_p + tt_p + tj_p + mk_p + insentif + gaji_cm) - (bpjs + ptg + pot_piutang)
+                        thp = (gaji_p  + gaji_cm) - (bpjs + ptg + pot_piutang)
                         obj["pot_rp"] = ptg
                         obj["pot_hr"] = pth
-                        obj["ntmk"] = mk_p
-                        obj["insentif"] = insentif
-                        obj["tj"] = tj_p
                         obj["pot_piutang"] = pot_piutang
-                        obj["tt"] = tt_p
                         obj["ket"] = ket
                         obj["dthp"] = thp
                         obj['gaji_cm'] = gaji_cm
@@ -353,13 +306,9 @@ def payroll_json(r):
                         datarg.append(obj)
                     else:
                         if cm == 0:
-                            thp = (p.gaji + p.t_tetap + p.t_jabatan + ntmk + insentif) - (bpjs + ptg + pot_piutang)
+                            thp = (p.gaji) - (bpjs + ptg + pot_piutang)
                             obj["pot_rp"] = ptg
                             obj["pot_hr"] = pth
-                            obj["ntmk"] = ntmk
-                            obj["insentif"] = insentif
-                            obj["tj"] = p.t_jabatan
-                            obj["tt"] = p.t_tetap
                             obj["pot_piutang"] = pot_piutang
                             obj["dthp"] = thp
                             obj["ket"] = ket
@@ -371,10 +320,6 @@ def payroll_json(r):
                             obj["pot_rp"] = 0
                             obj["pot_hr"] = 0
                             obj["pot_piutang"] = pot_piutang
-                            obj["ntmk"] = 0
-                            obj["insentif"] = 0
-                            obj["tj"] = 0
-                            obj["tt"] = 0
                             obj["dthp"] = thp
                             obj["ket"] = ket
                             obj["gaji_cm"] = gaji_cm
@@ -401,22 +346,17 @@ def payroll_json(r):
                     pth = 0
                 pth = 0 
                 ptg = 0
-                insentif = 0
 
 
                 if p.t_c == "None" or p.t_c is None:
                     pass
                 elif p.t_c == "Cash_proporsional" or p.t_c == "Transfer_proporsional":
-                    thp = (gaji_p + tt_p + tj_p + mk_p + insentif + gaji_cm) - (ptg + bpjs + pot_piutang)
+                    thp = (gaji_p + gaji_cm) - (ptg + bpjs + pot_piutang)
                     rg.gaji = gaji_p
                     rg.thp = thp
                     rg.pot_rupiah  = ptg
                     rg.pot_hari = pth
                     rg.pot_piutang = pot_piutang
-                    rg.t_masakerja = mk_p
-                    rg.insentif = insentif
-                    rg.t_jabatan = tj_p
-                    rg.t_tetap = tt_p
                     # rg = ket
                     rg.rek_sd_id = p.rek_sd.pk
                     rg.tgl_bayar = tgl_transfer
@@ -428,13 +368,9 @@ def payroll_json(r):
                     rg.save(using=cabang)
                 else:
                     if cm == 0:
-                        thp = (p.gaji + p.t_tetap + p.t_jabatan + ntmk + insentif) - (ptg + bpjs + pot_piutang)
+                        thp = (p.gaji ) - (ptg + bpjs + pot_piutang)
                         rg.gaji = p.gaji
                         rg.thp = thp
-                        rg.insentif = insentif
-                        rg.t_tetap = p.t_tetap
-                        rg.t_jabatan = p.t_jabatan
-                        rg.t_masakerja = ntmk
                         rg.pot_hari = pth
                         rg.pot_rupiah = ptg
                         rg.pot_piutang = pot_piutang
@@ -453,10 +389,6 @@ def payroll_json(r):
                         rg.pot_rupiah  = 0
                         rg.pot_hari = 0
                         rg.pot_piutang = pot_piutang
-                        rg.t_masakerja = 0
-                        rg.insentif = 0
-                        rg.t_jabatan = 0
-                        rg.t_tetap = 0
                         # rg = ket
                         rg.rek_sd_id = p.rek_sd.pk
                         rg.tgl_bayar = tgl_transfer
@@ -468,32 +400,23 @@ def payroll_json(r):
                         rg.save(using=cabang)
             else:
                 if not summary_rekap_gaji_db.objects.using(cabang).filter(tgl_bayar__month=bulan, tgl_bayar__year=tahun, status_pegawai_id=int(status)):
-                    insentif = 0
                     ptg = 0
                     pth = 0
                     if p.t_c == "None" or p.t_c is None:
                         pass
                     elif p.t_c == "Transfer_proporsional" or p.t_c == "Cash_proporsional":
-                        thp = (gaji_p + tt_p + tj_p + mk_p + insentif + gaji_cm) - (ptg + bpjs + pot_piutang)
+                        thp = (gaji_p + gaji_cm) - (ptg + bpjs + pot_piutang)
                         obj["dthp"] = thp
-                        obj["insentif"] = insentif
                         obj["pot_hr"] = pth
                         obj["pot_rp"] = ptg
                         obj["pot_piutang"] = pot_piutang
-                        obj["ntmk"] = mk_p
-                        obj["tj"] = tj_p
-                        obj["tt"] = tt_p
                         obj["gaji_cm"] = gaji_cm
                         obj["gaji"] = gaji_p
                         datarg.append(obj)
                     else:
                         if cm == 0:
-                            thp = (p.gaji + p.t_tetap + p.t_jabatan + insentif + ntmk) - (bpjs + ptg + pot_piutang)
+                            thp = (p.gaji) - (bpjs + ptg + pot_piutang)
                             obj["dthp"] = thp
-                            obj["tt"] = p.t_tetap
-                            obj["tj"] = p.t_jabatan
-                            obj["insentif"] = insentif
-                            obj["ntmk"] = ntmk
                             obj["pot_rp"] = ptg
                             obj["pot_hr"] = pth
                             obj["pot_piutang"] = pot_piutang
@@ -503,10 +426,6 @@ def payroll_json(r):
                         else:
                             thp = (gaji_cm) - (bpjs + pot_piutang)
                             obj["dthp"] = thp
-                            obj["tt"] = 0
-                            obj["tj"] = 0
-                            obj["insentif"] = 0
-                            obj["ntmk"] = 0
                             obj["pot_rp"] = 0
                             obj["pot_hr"] = 0
                             obj["pot_piutang"] = pot_piutang
@@ -524,10 +443,6 @@ def payroll_json(r):
             periode=g["periode"],
             tahun=g["tahun"],
             tgl_bayar=tgl_transfer,
-            t_masakerja=g["ntmk"],
-            t_jabatan=g["tj"],
-            t_tetap=g['tt'], 
-            insentif=g["insentif"],
             pot_hari=g["pot_hr"],
             pot_rupiah=g["pot_rp"],
             pot_piutang=g["pot_piutang"],
@@ -550,9 +465,8 @@ def payroll_json(r):
             'nik':ga.pegawai.nik,
             "bagian":ga.pegawai.divisi.divisi,
             "gaji":int(ga.pegawai.gaji),
-            "gaji_t":int(ga.pegawai.gaji) + int(ga.t_masakerja) + int(ga.t_jabatan) + int(ga.t_tetap) + int(ga.insentif),
+            "gaji_t":int(ga.pegawai.gaji) + int(ga.t_jabatan) + int(ga.t_tetap),
             "gaji_cm":ga.gaji_cm,
-            'insentif':ga.insentif,
             'tahun':ga.tahun,
             'periode':ga.periode,
             "pot_piutang":ga.pot_piutang,
@@ -560,9 +474,6 @@ def payroll_json(r):
             "bpjs_tk":ga.bpjs_tk,
             "bpjs_ks":ga.bpjs_ks,
             "total_pot":int(ga.pot_rupiah) + int(ga.bpjs) + int(ga.pot_piutang),
-            'tunjangan_masakerja':ga.t_masakerja,
-            'tunjangan_jabatan':ga.t_jabatan,
-            'tunjangan_tetap':ga.t_tetap,
             'pot_rupiah':ga.pot_rupiah,
             'total_bpjs':ga.bpjs,
             'total_gaji':ga.thp,        }
@@ -790,7 +701,6 @@ def konfirmasi(r):
         status = r.POST.get("status")
         cabang = r.session["ccabang"]
         username = r.session["user"]["nama"]
-        print("OKOKOk")
         try:
             status = int(status)
             if not status_pegawai_db.objects.using(r.session["ccabang"]).filter(pk=status).exists():
@@ -842,33 +752,29 @@ def konfirmasi(r):
             if jtransaksi is None:
                 messages.error(r,"Jenis transaksi tidak ada")
                 return redirect("payroll",sid=status)
-
-            for g in gaji_db.objects.using(r.session["ccabang"]).raw("select gaji.id, gaji.pot_piutang as gpot_piutang, piutang.pegawai_id as idp from payroll_app_gaji_db as gaji join payroll_app_piutang_db as piutang on gaji.pegawai_id=piutang.pegawai_id"):
-                piutang = piutang_db.objects.using(r.session["ccabang"]).filter(pegawai_id=g.idp).last()
-                if piutang.piutang != 0 and g.gpot_piutang != 0:
-                    totalPiutang = piutang.piutang - g.gpot_piutang
-                    print(totalPiutang,g.gpot_piutang)
+            
+            for g in gaji_db.objects.using(r.session["ccabang"]).all():
+                piutang = piutang_db.objects.using(r.session["ccabang"]).filter(pegawai_id=g.pegawai_id).last()
+                if piutang.piutang != 0 and g.pot_piutang != 0:
+                    totalPiutang = piutang.piutang - g.pot_piutang
+                    print(totalPiutang,g.pot_piutang)
                     piutang.piutang = totalPiutang
                     piutang.save() 
 
                     transaksi_db.objects.using(r.session["ccabang"]).create(
                         tgl=tbayar,
                         pegawai_id=g.idp,
-                        nilai=g.gpot_piutang,
+                        nilai=g.pot_piutang,
                         jenis_transaksi_id=jtransaksi.pk
                     )
                     setRedisTransaksi(r.session["ccabang"],g.idp)
             # if summary_rekap_gaji_db.objects.using(r.session["ccabang"])  
-            rekap = gaji_db.objects.using(r.session["ccabang"]).filter(periode=tbayar.month, tahun=tbayar.year,status_pegawai_id=status).aggregate(piutang=Sum("pot_piutang"),ttetap=Sum("t_tetap"),tjabatan=Sum("t_jabatan"),tmasakerja=Sum("t_masakerja"),insentif=Sum("insentif"),absensi=Sum("pot_rupiah"),bpjs_tk=Sum("bpjs_tk"),bpjs_ks=Sum("bpjs_ks"),gaji_cm=Sum("gaji_cm"),gaji=Sum("gaji"),thp=Sum("thp"))
+            rekap = gaji_db.objects.using(r.session["ccabang"]).filter(periode=tbayar.month, tahun=tbayar.year,status_pegawai_id=status).aggregate(piutang=Sum("pot_piutang"),ttetap=Sum("t_tetap"),tjabatan=Sum("t_jabatan"),absensi=Sum("pot_rupiah"),bpjs_tk=Sum("bpjs_tk"),bpjs_ks=Sum("bpjs_ks"),gaji_cm=Sum("gaji_cm"),gaji=Sum("gaji"),thp=Sum("thp"))
             print(tbayar.month,status)
             summary_rekap_gaji_db(
                 status_pegawai_id=status,
                 tgl_bayar=tbayar,
                 total_gaji_bruto=rekap["gaji"],
-                total_tmasakerja=rekap["tmasakerja"],
-                total_ttetap=rekap["ttetap"],
-                total_tjabatan=rekap["tjabatan"],
-                total_insentif=rekap["insentif"],
                 total_pot_piutang=rekap["piutang"],
                 total_pot_absensi=rekap["absensi"],
                 total_bpjs_tk=rekap["bpjs_tk"],
