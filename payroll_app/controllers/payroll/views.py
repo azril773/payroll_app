@@ -783,7 +783,6 @@ def konfirmasi(r):
                     piutang = piutang_db.objects.using(r.session["ccabang"]).filter(pegawai_id=g.pegawai_id).last()
                     if piutang.piutang != 0 and g.pot_piutang != 0:
                         totalPiutang = piutang.piutang - g.pot_piutang
-                        print(totalPiutang)
                         if totalPiutang < piutang.pot_piutang:
                             piutang.pot_piutang = totalPiutang
                             piutang.save()
