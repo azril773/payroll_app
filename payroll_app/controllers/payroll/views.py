@@ -41,10 +41,10 @@ def payroll_json(r):
             tahun_ini = today.year
             if not status_pegawai_payroll_db.objects.using(f'p{cabang}').filter(status_pegawai_id=int(status)).exists():
                 print("OK")
-                return JsonResponse({"status":"error","msg":"Status tidak terdaftar"},status=400)
+                raise Exception("Status tidak terdaftar")
             sm = summary_rekap_gaji_db.objects.using(r.session["ccabang"]).filter(status_pegawai_id=int(status)).last()
             if  sm is None:
-                return JsonResponse({"status":"error","msg":"Gaji terakhir tidak ada"},status=400)
+                raise Exception("Gaji terakhir tidak ada")
             sm = sm.tgl_bayar
             if sm.month == 12:
                 bulan = 1
@@ -110,7 +110,7 @@ def payroll_json(r):
             ijin_nik = []
 
             if potongan is None:
-                return JsonResponse({"status":"erorr","msg":"Potongan absensi tidak ada"},status=400)
+                raise Exception("Potongan absensi tidak ada")
             for k in data_ijin_db.objects.using(r.session["ccabang"]).filter(tahun=tahun,periode=bulan):
                 data_k = {
                     "idp":k.pegawai_id,
@@ -141,7 +141,7 @@ def payroll_json(r):
                 else:
                     cm_ke = 0
                 if p.gaji is None:
-                    return JsonResponse({"status":"error","msg":"Gaji Pegawai tidak ada"},status=400)
+                    raise Exception("Gaji Pegawai tidak ada")
                 
                 if cm > 0:
                     if cm_ke < 3:
@@ -488,7 +488,8 @@ def payroll_json(r):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
-            return JsonResponse({"status":"error",'msg':"Terjadi kesalahan"},status=400)
+            msg = e.args[0] if e.args is not None else "Terjadi kesalahan"
+            return JsonResponse({"status":"error",'msg':msg},status=400)
 
 
 @authorization(["root","it"])
@@ -514,7 +515,7 @@ def edit_payroll(r):
                     piutang = piutang_db.objects.using(r.session["ccabang"]).filter(pegawai_id=gaji.pegawai_id).last()
                     # Cek jika gaji tidak ada maka return error
                     if gaji is None:
-                        return JsonResponse({"status":'error',"msg":"Data tidak ada"},status=400)
+                        raise Exception("Data tidak ada")
                     # Jika data didalam database berbeda dengan yang di body request maka update data didalam database lalu set status field jadi 1
                     if gaji.pot_hari != pot_hari:
                         # Update data didatabase
@@ -526,7 +527,7 @@ def edit_payroll(r):
                         else:
                             if gaji.pot_piutang != pot_piutang:
                                 if pot_piutang > piutang.piutang:
-                                    return JsonResponse({"status":"error","msg":"Pot piutang lebih besar dari piutang"},status=400)
+                                    raise Exception("Pot piutang lebih besar dari piutang")
                                 else:
                                     gaji.pot_piutang = pot_piutang
                                     gaji.status_potpiutang = 1
@@ -543,12 +544,12 @@ def edit_payroll(r):
                     gaji.save(using=r.session["ccabang"])
                     return JsonResponse({"status":'success',"msg":"Berhasil update"},status=200)
             except Exception as e:
-                print(e)
                 transaction.set_rollback(True,r.session["ccabang"])
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
-                return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
+                msg = e.args[0] if e.args is not None else "Terjadi kesalahan"
+                return JsonResponse({"status":"error","msg":msg},status=400)
     else:
         return JsonResponse({"status":"error","msg":"Not Found"},status=400)
 
@@ -569,7 +570,7 @@ def bcsv(r):
             sm = summary_rekap_gaji_db.objects.using(r.session["ccabang"]).filter(status_pegawai_id=int(statusid)).last()
             print(sm.tgl_bayar)
             if sm is None:
-                return JsonResponse({"status":"error","msg":"rekap gaji tidak ada"},status=400)
+                raise Exception("rekap gaji tidak ada")
             ltbayar = sm.tgl_bayar
             if ltbayar.month == 12:
                 periode_gaji = 1
@@ -617,7 +618,8 @@ def bcsv(r):
             exc_type, exc_obj, exc_tb = sys.exc_info()
             fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
             print(exc_type, fname, exc_tb.tb_lineno)
-            return JsonResponse({"status":"error","msg":"Terjadi kesalahan"},status=400)
+            msg = e.args[0] if e.args is not None else "Terjadi kesalahan"
+            return JsonResponse({"status":"error","msg":msg},status=400)
     return JsonResponse({"status":"success","msg":"Berhasil"},status=200)
 
 
@@ -626,85 +628,84 @@ def bcsv(r):
 @authorization(["root","it"])
 def csvp(r):
     if r.method == "POST":
-        with transaction.atomic(using=r.session["ccabang"]):
-            sid = r.POST.get("sid")
-            cabang = r.session["ccabang"]
-            try:
-                status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
-                sm = summary_rekap_gaji_db.objects.using(cabang).filter(status_pegawai_id=int(sid)).last()
-                if sm is None:
-                    return JsonResponse({"status":"error","msg":"rekap gaji tidak ada"},status=400)
-                ltbayar = sm.tgl_bayar
-                if ltbayar.month == 12:
-                    periode_gaji = 1
-                    tahun_gaji = int(ltbayar.year) + 1
+        sid = r.POST.get("sid")
+        cabang = r.session["ccabang"]
+        try:
+            status = status_pegawai_payroll_db.objects.using(f'p{r.session["ccabang"]}').all()
+            sm = summary_rekap_gaji_db.objects.using(cabang).filter(status_pegawai_id=int(sid)).last()
+            if sm is None:
+                return JsonResponse({"status":"error","msg":"rekap gaji tidak ada"},status=400)
+            ltbayar = sm.tgl_bayar
+            if ltbayar.month == 12:
+                periode_gaji = 1
+                tahun_gaji = int(ltbayar.year) + 1
+            else:
+                periode_gaji = int(ltbayar.month) + 1
+                tahun_gaji = int(ltbayar.year)
+            b_31 = [1, 3, 5, 7, 10, 10, 12]
+            # define tahun kabisat
+            if (tahun_gaji % 400 == 0) and (tahun_gaji % 100 == 0):
+                kabisat = 1
+            elif (tahun_gaji % 4 == 0) and (tahun_gaji % 100 != 0):
+                kabisat = 1
+            else:
+                kabisat = 0
+            # Define tgl transfer/bayar payroll (25 < tgl < 6)
+            if periode_gaji == 2:
+                if kabisat == 0:
+                    ftgl = "{}-{}-{}".format(tahun_gaji, periode_gaji, 28)
                 else:
-                    periode_gaji = int(ltbayar.month) + 1
-                    tahun_gaji = int(ltbayar.year)
-                b_31 = [1, 3, 5, 7, 10, 10, 12]
-                # define tahun kabisat
-                if (tahun_gaji % 400 == 0) and (tahun_gaji % 100 == 0):
-                    kabisat = 1
-                elif (tahun_gaji % 4 == 0) and (tahun_gaji % 100 != 0):
-                    kabisat = 1
+                    ftgl = "{}-{}-{}".format(tahun_gaji, periode_gaji, 29)
+            else:
+                if int(periode_gaji) in b_31:
+                    ftgl = "{}-{}-{}".format(tahun_gaji, int(periode_gaji), 31)
                 else:
-                    kabisat = 0
-                # Define tgl transfer/bayar payroll (25 < tgl < 6)
-                if periode_gaji == 2:
-                    if kabisat == 0:
-                        ftgl = "{}-{}-{}".format(tahun_gaji, periode_gaji, 28)
-                    else:
-                        ftgl = "{}-{}-{}".format(tahun_gaji, periode_gaji, 29)
-                else:
-                    if int(periode_gaji) in b_31:
-                        ftgl = "{}-{}-{}".format(tahun_gaji, int(periode_gaji), 31)
-                    else:
-                        ftgl = "{}-{}-{}".format(tahun_gaji, int(periode_gaji), 30)
-                lasttrans = ttrans_db.objects.using(cabang).filter(jenis_transfer__iregex=r"Payroll").last()
-                if lasttrans is not None:
-                    if lasttrans.tanggal_transfer.month == periode_gaji and lasttrans.tanggal_transfer.year == tahun_gaji and lasttrans.tanggal_transfer.day > 25:
-                        trans = ttrans_db.objects.using(cabang).get(jenis_transfer__iregex=r"Payroll")
-                        tbayar = trans.tanggal_transfer
-                    else:
-                        tgl = datetime.strptime(ftgl,"%Y-%m-%d")
-                        tbayar = tgl.date()
+                    ftgl = "{}-{}-{}".format(tahun_gaji, int(periode_gaji), 30)
+            lasttrans = ttrans_db.objects.using(cabang).filter(jenis_transfer__iregex=r"Payroll").last()
+            if lasttrans is not None:
+                if lasttrans.tanggal_transfer.month == periode_gaji and lasttrans.tanggal_transfer.year == tahun_gaji and lasttrans.tanggal_transfer.day > 25:
+                    trans = ttrans_db.objects.using(cabang).get(jenis_transfer__iregex=r"Payroll")
+                    tbayar = trans.tanggal_transfer
                 else:
                     tgl = datetime.strptime(ftgl,"%Y-%m-%d")
                     tbayar = tgl.date()
-                data = []
-                for rek in rekening_db.objects.using(cabang).all():
-                    totalGaji = gaji_db.objects.using(cabang).filter(status_pegawai__id=int(sid),rek_sd_id=int(rek.pk)).aggregate(bayar=Sum("thp"),count=Count("id"))
-                    obj = {
-                        'id_sd':rek.pk,
-                        "rek":rek.norek,
-                        "nama":rek.atas_nama,
-                        "alias":rek.alias,
-                        'mata_uang':'IDR',
-                        'gaji':totalGaji["bayar"],
-                        'keterangan':f"Gaji {nama_bulan(tbayar.month)}-{tbayar.year}",
-                        'total_rek':totalGaji["count"],
-                        'tanggal_bayar':datetime.strftime(tbayar,"%Y-%m-%d"),
-                        'email':rek.email,
-                        'data':[]
+            else:
+                tgl = datetime.strptime(ftgl,"%Y-%m-%d")
+                tbayar = tgl.date()
+            data = []
+            for rek in rekening_db.objects.using(cabang).all():
+                totalGaji = gaji_db.objects.using(cabang).filter(status_pegawai__id=int(sid),rek_sd_id=int(rek.pk)).aggregate(bayar=Sum("thp"),count=Count("id"))
+                obj = {
+                    'id_sd':rek.pk,
+                    "rek":rek.norek,
+                    "nama":rek.atas_nama,
+                    "alias":rek.alias,
+                    'mata_uang':'IDR',
+                    'gaji':totalGaji["bayar"],
+                    'keterangan':f"Gaji {nama_bulan(tbayar.month)}-{tbayar.year}",
+                    'total_rek':totalGaji["count"],
+                    'tanggal_bayar':datetime.strftime(tbayar,"%Y-%m-%d"),
+                    'email':rek.email,
+                    'data':[]
+                }
+                print(obj)
+                for g in gaji_db.objects.using(cabang).filter(status_pegawai__id=int(sid),rek_sd_id=int(rek.pk)):
+                    ga = {
+                        'rek':g.pegawai.no_rekening if g.pegawai.no_rekening is not None else None,
+                        'nama':g.pegawai.nama,
+                        'mata_uang':"IDR",
+                        'gaji':g.thp if g.thp is not None or g.thp != 0 else g.gaji_cm,
+                        'keterangan':f"Gaji {nama_bulan(g.tgl_bayar.month)} {g.tgl_bayar.year}",
                     }
-                    print(obj)
-                    for g in gaji_db.objects.using(cabang).filter(status_pegawai__id=int(sid),rek_sd_id=int(rek.pk)):
-                        ga = {
-                            'rek':g.pegawai.no_rekening if g.pegawai.no_rekening is not None else None,
-                            'nama':g.pegawai.nama,
-                            'mata_uang':"IDR",
-                            'gaji':g.thp if g.thp is not None or g.thp != 0 else g.gaji_cm,
-                            'keterangan':f"Gaji {nama_bulan(g.tgl_bayar.month)} {g.tgl_bayar.year}",
-                        }
-                        obj["data"].append(ga)
-                    data.append(obj)
-                return render(r,"payroll/csvp/csvp.html",{"data":data,"sid":sid,"status":status})
-            except Exception as e:
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)
-                messages.error(r,"Terjadi kesalahan")
-                return redirect("payroll",sid=sid)
+                    obj["data"].append(ga)
+                data.append(obj)
+            return render(r,"payroll/csvp/csvp.html",{"data":data,"sid":sid,"status":status})
+        except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
+            messages.error(r,"Terjadi kesalahan")
+            return redirect("payroll",sid=sid)
 
 @authorization(["root","it"])
 def batalKonfirmasi(r):
@@ -730,11 +731,11 @@ def konfirmasi(r):
             try:
                 status = int(status)
                 if not status_pegawai_db.objects.using(r.session["ccabang"]).filter(pk=status).exists():
-                    return JsonResponse({"status":'error',"msg":"Status pegawai tidak ada"},status=400)
+                    raise Exception("Status pegawai tidak ada")
                 
                 sm = summary_rekap_gaji_db.objects.using(cabang).filter(status_pegawai_id=int(status)).last()
                 if sm is None:
-                    return JsonResponse({"status":"error","msg":"rekap gaji tidak ada"},status=400)
+                    raise Exception("rekap gaji tidak ada")
                 ltbayar = sm.tgl_bayar
                 if ltbayar.month == 12:
                     periode_gaji = 1
@@ -775,8 +776,7 @@ def konfirmasi(r):
                 
                 jtransaksi = jenis_transaksi_db.objects.using(r.session["ccabang"]).filter(jenis_transaksi__iregex=r"Pembayaran by payroll").last()
                 if jtransaksi is None:
-                    messages.error(r,"Jenis transaksi tidak ada")
-                    return redirect("payroll",sid=status)
+                    raise Exception("Jenis transaksi tidak ada")
                 
 
                 for g in gaji_db.objects.using(r.session["ccabang"]).filter(status_pegawai_id=status):
@@ -867,7 +867,7 @@ def konfirmasi(r):
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
                 msg = e.args[0] if e.args is not None else "Terjadi kesalahan"
-                messages.error(r,e)
+                messages.error(r,msg)
                 return redirect("payroll",sid=status)
 
 
@@ -966,6 +966,9 @@ def printC(r):
                 file["Content-Disposition"] = f'attachment; filename=payroll {rek.nama_rekening} {tbayar.month} {tbayar.year}.csv'
                 return file
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             messages.error(r,e)
             return redirect("payroll",sid=sid)
         
@@ -1057,5 +1060,8 @@ def printP(r):
                 data["data"].append(obj)
             return render(r,"payroll/laporan/pdf.html",{"data":data})
         except Exception as e:
+            exc_type, exc_obj, exc_tb = sys.exc_info()
+            fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            print(exc_type, fname, exc_tb.tb_lineno)
             messages.error(r,e)
             return redirect("payroll",sid=sid)
