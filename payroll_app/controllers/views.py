@@ -6,6 +6,7 @@ from .payroll.views import *
 from .pegawai.views import *
 from .piutang.views import *
 from .api.ijin import *
+from .thr.views import *
 from .pengaturan.views import *
 # @authorization(["root","it"])
 # def status_pegawai_json(r):

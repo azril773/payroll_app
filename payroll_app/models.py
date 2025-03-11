@@ -313,6 +313,67 @@ class summary_rekap_gaji_db(models.Model):
     edit_date = models.DateTimeField(auto_now=True, null=True)
 
 
+
+
+
+
+################################## THR Models ##################################
+
+
+
+# Rekap THR
+class thr_db(models.Model):
+    pegawai = models.CharField(max_length=50)
+    norek = models.CharField(max_length=100, null=True)
+    nik = models.IntegerField(null=True)
+    divisi = models.CharField(max_length=200, null=True)
+    mkerja = models.CharField(max_length=50, null=True)
+    gaji = models.IntegerField(default=0)
+    t_masakerja = models.IntegerField(default=0)
+    t_jabatan = models.IntegerField(default=0)
+    t_tetap = models.IntegerField(default=0)
+    tgl_bayar = models.DateField(null=True, blank=True)
+    thr = models.IntegerField(default=0)
+    rek_sumber = models.CharField(max_length=200, null=True)
+    status = models.IntegerField(default=0)
+    cash_transfer = models.CharField(max_length=100, null=True)
+    edit_by = models.CharField(max_length=50, null=True)
+    edit_date = models.DateTimeField(auto_now=True)
+
+    def __int__(self):
+        return self.pegawai
+
+    class Meta:
+        verbose_name = "Rekap THR"
+        verbose_name_plural = "Rekap THR"
+
+
+# Histori THR
+class histori_thr_db(models.Model):
+    pegawai = models.CharField(max_length=50)
+    norek = models.CharField(max_length=100, null=True)
+    nik = models.IntegerField(null=True)
+    divisi = models.CharField(max_length=200, null=True)
+    mkerja = models.CharField(max_length=50, null=True)
+    gaji = models.IntegerField(default=0)
+    t_masakerja = models.IntegerField(default=0)
+    t_jabatan = models.IntegerField(default=0)
+    t_tetap = models.IntegerField(default=0)
+    tgl_bayar = models.DateField(null=True, blank=True)
+    thr = models.IntegerField(default=0)
+    rek_sumber = models.CharField(max_length=200, null=True)
+    status = models.IntegerField(default=0)
+    edit_by = models.CharField(max_length=50, null=True)
+    edit_date = models.DateTimeField(auto_now=True)
+
+    def __int__(self):
+        return self.pegawai
+
+    class Meta:
+        verbose_name = "Histori THR"
+        verbose_name_plural = "Histori THR"
+
+
 ################################## Piutang Models ##################################
 
 class jenis_transaksi_db(models.Model):

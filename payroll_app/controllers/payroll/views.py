@@ -681,7 +681,7 @@ def csvp(r):
                     "nama":rek.atas_nama,
                     "alias":rek.alias,
                     'mata_uang':'IDR',
-                    'gaji':totalGaji["bayar"],
+                    'gaji':totalGaji["bayar"] if totalGaji["bayar"] is not None else 0,
                     'keterangan':f"Gaji {nama_bulan(tbayar.month)}-{tbayar.year}",
                     'total_rek':totalGaji["count"],
                     'tanggal_bayar':datetime.strftime(tbayar,"%Y-%m-%d"),
