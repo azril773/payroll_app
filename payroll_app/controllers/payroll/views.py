@@ -797,8 +797,13 @@ def konfirmasi(r):
                         setRedisTransaksi(r.session["ccabang"],g.pegawai_id)
                     if g.gaji_cm > 0:
                         history = histori_rekap_gaji_db.objects.using(r.session["ccabang"]).filter(pegawai_id=g.pegawai_id).last()
-                        if not history:
-                            raise Exception("History rekap gaji tidak ada")
+                        if history is not None:
+                            if history.cm_ke is not None:
+                                cm_ke = history.cm_ke + 1
+                            else:
+                                cm_ke = 1
+                        else:
+                            cm_ke = 1
                         cm_ke = history.cm_ke + 1
                         histori_rekap_gaji_db(
                             pegawai=g.pegawai_id,
