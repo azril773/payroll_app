@@ -9,6 +9,7 @@ def thr(r):
         hari_ini = today.day
         bulan_ini = today.month
         tahun_ini = today.year
+        cabang = r.session["ccabang"]
         if not status_pegawai_payroll_db.objects.using(f'p{cabang}').filter(status_pegawai_id=int(status)).exists():
             print("OK")
             raise Exception("Status tidak terdaftar")

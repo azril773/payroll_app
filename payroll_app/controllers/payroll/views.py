@@ -794,7 +794,6 @@ def konfirmasi(r):
                             nilai=g.pot_piutang,
                             jenis_transaksi_id=jtransaksi.pk
                         )
-                        setRedisTransaksi(r.session["ccabang"],g.pegawai_id)
                     if g.gaji_cm > 0:
                         history = histori_rekap_gaji_db.objects.using(r.session["ccabang"]).filter(pegawai_id=g.pegawai_id).last()
                         if history is not None:

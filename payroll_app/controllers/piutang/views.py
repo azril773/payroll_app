@@ -1,52 +1,52 @@
 from ..lib import *
 
 
-def setRedisTemp(cabang):
-    data = []
-    temporary = temporary_piutang_db.objects.select_related("pegawai","jenis_piutang","jenis_piutang__jenis_transaksi").using(cabang).all()
-    # Jika belum ambil semua data dari table temporary
-    for temp in temporary:
-        obj = {
-            "id":temp.pk,
-            "tanggal":str(temp.tgl),
-            "pegawai":temp.pegawai.nama,
-            "pegawai_id":temp.pegawai_id,
-            "piutang":temp.piutang,
-            "pot_piutang":temp.pot_piutang,
-            "jenis_piutang":temp.jenis_piutang.jenis_transaksi.jenis_transaksi,
-            "jenis_id":temp.jenis_piutang_id,
-        }
-        data.append(obj)
-    # Set redis untuk data dari temporary
-    redisConn.hset("post_piutang",mapping={
-        "data":json.dumps(data)
-    })
-    # Set expire data selama 5 menit
-    redisConn.expire("post_piutang",300)
+# def setRedisTemp(cabang):
+#     data = []
+#     temporary = temporary_piutang_db.objects.select_related("pegawai","jenis_piutang","jenis_piutang__jenis_transaksi").using(cabang).all()
+#     # Jika belum ambil semua data dari table temporary
+#     for temp in temporary:
+#         obj = {
+#             "id":temp.pk,
+#             "tanggal":str(temp.tgl),
+#             "pegawai":temp.pegawai.nama,
+#             "pegawai_id":temp.pegawai_id,
+#             "piutang":temp.piutang,
+#             "pot_piutang":temp.pot_piutang,
+#             "jenis_piutang":temp.jenis_piutang.jenis_transaksi.jenis_transaksi,
+#             "jenis_id":temp.jenis_piutang_id,
+#         }
+#         data.append(obj)
+#     # Set redis untuk data dari temporary
+#     redisConn.hset("post_piutang",mapping={
+#         "data":json.dumps(data)
+#     })
+#     # Set expire data selama 5 menit
+#     redisConn.expire("post_piutang",300)
 
-def setRedisTransaksi(cabang,idp):
-    data = []
-    transaksi = transaksi_db.objects.select_related("pegawai","jenis_transaksi","kode_piutang").using(cabang).filter(pegawai_id=int(idp))
-    # Jika belum ambil semua data dari table transaksi
-    for trans in transaksi:
-        obj = {
-            "id":trans.pk,
-            "tgl":str(trans.tgl),
-            "pegawai":trans.pegawai.nama,
-            "pegawai_id":trans.pegawai_id,
-            "nilai":trans.nilai,
-            "jenis_transaksi":trans.jenis_transaksi.jenis_transaksi,
-            "jenis_id":trans.jenis_transaksi_id,
-            "nodok":trans.nodok,
-            "kode_piutang":""
-        }
-        data.append(obj)
-    # Set redis untuk data dari transaksi
-    redisConn.hset(f"transaksi-{idp}",mapping={
-        "data":json.dumps(data)
-    })
-    # Set expire data selama 5 menit
-    redisConn.expire(f"transaksi-{idp}",300)
+# def setRedisTransaksi(cabang,idp):
+#     data = []
+#     transaksi = transaksi_db.objects.select_related("pegawai","jenis_transaksi","kode_piutang").using(cabang).filter(pegawai_id=int(idp))
+#     # Jika belum ambil semua data dari table transaksi
+#     for trans in transaksi:
+#         obj = {
+#             "id":trans.pk,
+#             "tgl":str(trans.tgl),
+#             "pegawai":trans.pegawai.nama,
+#             "pegawai_id":trans.pegawai_id,
+#             "nilai":trans.nilai,
+#             "jenis_transaksi":trans.jenis_transaksi.jenis_transaksi,
+#             "jenis_id":trans.jenis_transaksi_id,
+#             "nodok":trans.nodok,
+#             "kode_piutang":""
+#         }
+#         data.append(obj)
+#     # Set redis untuk data dari transaksi
+#     redisConn.hset(f"transaksi-{idp}",mapping={
+#         "data":json.dumps(data)
+#     })
+#     # Set expire data selama 5 menit
+#     redisConn.expire(f"transaksi-{idp}",300)
 
 
 @authorization(["root","it"])
@@ -154,7 +154,6 @@ def tpiutang_json(r):
                         jenis_piutang_id=int(jenis),
                         add_by=username
                     ).save(using=r.session["ccabang"])
-                    setRedisTemp(r.session["ccabang"])
                     count = temporary_piutang_db.objects.using(r.session["ccabang"]).all().aggregate(count=Count("id"))
                     return JsonResponse({"status":"success","msg":"Success add a piutang","data":{'count':count["count"]}})    
                 except Exception as e:
@@ -226,9 +225,6 @@ def tbh_piutang_json(r):
                         ).save(using=r.session["ccabang"])
 
 
-                    # Jalan set redis temporary untuk set key "post_piutang" dengan temporary
-                    setRedisTemp(r.session["ccabang"])
-                    setRedisTransaksi(r.session["ccabang"],temp.pegawai_id)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session["ccabang"])
                     exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -249,16 +245,22 @@ def post_piutang_json(r):
     if r.headers["X-Requested-With"] == "XMLHttpRequest":
         data = []
 
-        # Cek apakah data sudah ada di redis
-        if not redisConn.hgetall("post_piutang"):
-            # Jalan set redis temporary untuk set key post_piutang dengan temporary
-            setRedisTemp(r.session["ccabang"])
+        data = []
+        temporary = temporary_piutang_db.objects.select_related("pegawai","jenis_piutang","jenis_piutang__jenis_transaksi").using(r.session["ccabang"]).all()
+        # Jika belum ambil semua data dari table temporary
+        for temp in temporary:
+            obj = {
+                "id":temp.pk,
+                "tanggal":str(temp.tgl),
+                "pegawai":temp.pegawai.nama,
+                "pegawai_id":temp.pegawai_id,
+                "piutang":temp.piutang,
+                "pot_piutang":temp.pot_piutang,
+                "jenis_piutang":temp.jenis_piutang.jenis_transaksi.jenis_transaksi,
+                "jenis_id":temp.jenis_piutang_id,
+            }
+            data.append(obj)
 
-        # Ambil data dari key "post_piutang"
-        result = redisConn.hgetall("post_piutang")["data"]
-        # Load dari json ke dict
-        data = json.loads(result)
-        print(data)
         return JsonResponse({"status":"success","msg":"Berhasil ambil data temporary","data":data},status=200)
     else:
         return JsonResponse({"status":"error","msg":"Not Found"},status=404)
@@ -332,7 +334,6 @@ def edit_piutang_json(r):
                     temp.save(using=r.session["ccabang"])
 
                     # Update data redis
-                    setRedisTemp(r.session["ccabang"])
                     return JsonResponse({"status":"success","msg":"Berhasil edit temporary"},status=200)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session["ccabang"])
@@ -362,7 +363,6 @@ def delete_piutang_json(r):
 
                 # Hapus jika ada kalo ga ada ya udah
                 temporary_piutang_db.objects.using(r.session["ccabang"]).filter(pk=int(id)).delete()
-                setRedisTemp(r.session["ccabang"])
                 count = temporary_piutang_db.objects.using(r.session["ccabang"]).all().aggregate(count=Count("id"))
                 return JsonResponse({"status":'success',"msg":"Berhasil hapus datas","count":count},status=200)
             except Exception as e:
@@ -401,7 +401,6 @@ def edit_potongan_json(r):
                 piutang.pot_piutang = pot
                 piutang.save(using=r.session["ccabang"])
                 # Updata data di redis
-                setRedisTemp(r.session["ccabang"])
                 return JsonResponse({"status":"success","msg":"Berhasil edit potongan piutang"},status=200)
             except Exception as e:
                 transaction.set_rollback(True,using=r.session["ccabang"])
@@ -423,13 +422,23 @@ def detail_piutang_json(r):
             # Convert idp ke integer
             idp = int(idp)
 
-            # Cek jika redis dengan key tersebut tidak ada, jika tidak ada maka set
-            if not redisConn.hgetall(f"transaksi-{idp}"):
-                setRedisTransaksi(r.session["ccabang"],idp)
+            data = []
+            transaksi = transaksi_db.objects.select_related("pegawai","jenis_transaksi","kode_piutang").using(r.session["ccabang"]).filter(pegawai_id=int(idp))
+            # Jika belum ambil semua data dari table transaksi
+            for trans in transaksi:
+                obj = {
+                    "id":trans.pk,
+                    "tgl":str(trans.tgl),
+                    "pegawai":trans.pegawai.nama,
+                    "pegawai_id":trans.pegawai_id,
+                    "nilai":trans.nilai,
+                    "jenis_transaksi":trans.jenis_transaksi.jenis_transaksi,
+                    "jenis_id":trans.jenis_transaksi_id,
+                    "nodok":trans.nodok,
+                    "kode_piutang":""
+                }
+                data.append(obj)
             
-            # Ambil data dari redis dengan key tertentu
-            result = redisConn.hgetall(f"transaksi-{idp}")["data"]
-            data = json.loads(result)
             return JsonResponse({"status":'success',"msg":"Berhasil ambil data transaksi","data":data},status=200)
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -480,7 +489,6 @@ def edit_detail_json(r):
                     trans.save(using=r.session["ccabang"])
 
                     # Update data transaksi di redis
-                    setRedisTransaksi(r.session["ccabang"],trans.pegawai.pk)
                     return JsonResponse({"status":'success',"msg":"Berhasil edit data"},status=200)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session["ccabang"])
@@ -548,7 +556,6 @@ def pelunasan_json(r):
                             nilai=total,
                             jenis_transaksi_id=jenis.pk  
                         ).save(using=r.session["ccabang"])
-                        setRedisTransaksi(r.session["ccabang"],piutang.pegawai_id)
                         return JsonResponse({"status":"success","msg":"Berhasil melakukan pelunasan"},status=200)
 
                     # Jika total tidak sama dengan total piutang maka return error
@@ -567,7 +574,6 @@ def pelunasan_json(r):
                         nilai=total,
                         jenis_transaksi_id=jenis.pk  
                     ).save(using=r.session["ccabang"])
-                    setRedisTransaksi(r.session["ccabang"],piutang.pegawai_id)
                     return JsonResponse({"status":"success","msg":"Berhasil melakukan pelunasan"},status=200)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session["ccabang"])
@@ -656,7 +662,6 @@ def tketemu_keliru(r):
                     ).save(using=r.session["ccabang"])
 
                     # Set data redis transaksi
-                    setRedisTransaksi(r.session["ccabang"],idp)
                     return JsonResponse({"status":'success',"msg":"Berhasil tambah ketemu"},status=201)
                 except Exception as e:
                     transaction.set_rollback(True,using=r.session['ccabang'])
