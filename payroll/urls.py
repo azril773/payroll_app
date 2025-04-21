@@ -91,7 +91,13 @@ def callback(r):
                 add_by=result["name"],
                 user_id=user.pk
             ).save()
-
+        if is_admin[0]:
+            akses = akses_db.objects.using(c.cabang).filter(user_id=user.pk).last()
+            if not akses:
+                akses_db(user_id=user.pk,akses='root').save(using=c.cabang)
+            else:
+                akses.akses = "root"
+                akses.save(using=c.cabang)
     
     r.session["cabang"] = getCabang
     r.session["ccabang"] = getCabang[0]
